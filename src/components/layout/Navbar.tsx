@@ -5,7 +5,7 @@ import Link from "next/link";
 import { GraduationCap, Bell, Search, UserCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
-export default function Navbar() {
+export default function Navbar({ role }: { role?: string }) {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
@@ -16,7 +16,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="flex h-16 items-center justify-between px-4 md:px-8 border-b border-white/5 bg-slate-950/50 backdrop-blur-xl fixed top-0 left-0 right-0 z-50">
+    <nav className="flex h-16 w-full items-center justify-between px-4 md:px-8 border-b border-white/5 bg-slate-950/50 backdrop-blur-xl shrink-0">
       <div className="flex items-center gap-6 w-full max-w-sm">
         <div className="relative group w-full hidden sm:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-purple-400 transition-colors" />

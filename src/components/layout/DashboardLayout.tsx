@@ -25,7 +25,7 @@ const DashboardLayout = ({
         <Navbar role={role} />
         
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-6 scroll-smooth">
+        <main className="flex-1 overflow-hidden pt-4 px-6 pb-6 scroll-smooth">
           <div className="w-full px-2">
             {children}
           </div>

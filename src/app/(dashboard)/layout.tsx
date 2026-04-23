@@ -1,12 +1,15 @@
+"use client";
+
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import { usePathname } from "next/navigation";
 
 export default function Layout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // ভবিষ্যতে এখানে সেশন চেক করে রোল পাস করব
-  const role = "instructor"; // Temporary dummy role
+  const pathname = usePathname();
+  const role = pathname?.startsWith("/student") ? "student" : "instructor";
 
   return (
     <DashboardLayout role={role}>

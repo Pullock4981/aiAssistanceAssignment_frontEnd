@@ -17,6 +17,14 @@ import { motion } from "framer-motion";
 
 const Sidebar = ({ role = "instructor" }: { role?: "instructor" | "student" }) => {
   const pathname = usePathname();
+  const [user, setUser] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
 
   const navItems = role === "instructor" ? [
     { name: "Dashboard", href: "/instructor", icon: LayoutDashboard },
@@ -90,11 +98,15 @@ const Sidebar = ({ role = "instructor" }: { role?: "instructor" | "student" }) =
         <div className="flex items-center gap-4 px-2">
           <div className="relative h-9 w-9 overflow-hidden rounded-full border border-white/10">
             <div className="flex h-full w-full items-center justify-center bg-purple-900/10 text-purple-400/70 text-xs">
-               <span className="font-bold tracking-tighter">AR</span>
+               <span className="font-bold tracking-tighter">
+                 {user ? user.name.split(' ').map((n: string) => n[0]).join('') : "US"}
+               </span>
             </div>
           </div>
           <div className="flex flex-col">
-            <span className="text-[13px] font-semibold text-slate-300 leading-tight">Ashikur Rahman</span>
+            <span className="text-[13px] font-semibold text-slate-300 leading-tight">
+              {user ? user.name : "Loading..."}
+            </span>
             <span className="text-[9px] text-slate-600 uppercase tracking-[0.2em] font-bold">{role}</span>
           </div>
         </div>
