@@ -1,10 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, FileText, CheckCircle, Clock, Sparkles, TrendingUp, Plus, BarChart3, BookOpen, GraduationCap } from "lucide-react";
+import { Users, FileText, CheckCircle, Clock, Sparkles, TrendingUp, Plus, BarChart3, BookOpen, GraduationCap, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
+import { toast, Toaster } from "sonner";
 
 const container = {
   hidden: { opacity: 0 },
@@ -17,15 +19,89 @@ const item = {
 };
 
 export default function InstructorDashboard() {
+  const [user, setUser] = useState<any>(null);
+  const [statsData, setStatsData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+    
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+
+    const fetchStats = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+        const response = await axios.get(`${apiUrl}/analytics/instructor`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (response.data.success) {
+          setStatsData(response.data.data);
+        }
+      } catch (error: any) {
+        console.error("Failed to fetch stats:", error);
+        toast.error("Failed to load dashboard data.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  // Helper to get total submissions from stats
+  const totalSubmissions = statsData?.submissionStats?.reduce((acc: number, curr: any) => acc + curr.count, 0) || 0;
+  const pendingSubmissions = statsData?.submissionStats?.find((s: any) => s._id === 'pending')?.count || 0;
+  const approvedSubmissions = statsData?.submissionStats?.find((s: any) => s._id === 'approved')?.count || 0;
+  const approvalRate = totalSubmissions > 0 ? Math.round((approvedSubmissions / totalSubmissions) * 100) : 0;
+
   const stats = [
-    { title: "Active Assignments", value: "12", icon: FileText, color: "bg-purple-900/40", trend: "+2 THIS WEEK" },
-    { title: "Total Submissions", value: "148", icon: Users, color: "bg-violet-900/40", trend: "+24 TODAY" },
-    { title: "Approval Rate", value: "92%", icon: CheckCircle, color: "bg-fuchsia-900/40", trend: "HIGH PERFORMANCE" },
-    { title: "Pending Review", value: "56", icon: Clock, color: "bg-slate-800/40", trend: "NEEDS ATTENTION" },
+    { 
+      title: "Active Assignments", 
+      value: statsData?.totalAssignments || "0", 
+      icon: FileText, 
+      color: "bg-purple-900/40", 
+      trend: "+0 THIS WEEK" 
+    },
+    { 
+      title: "Total Submissions", 
+      value: totalSubmissions, 
+      icon: Users, 
+      color: "bg-violet-900/40", 
+      trend: "LIVE DATA" 
+    },
+    { 
+      title: "Approval Rate", 
+      value: `${approvalRate}%`, 
+      icon: CheckCircle, 
+      color: "bg-fuchsia-900/40", 
+      trend: approvalRate > 80 ? "HIGH PERFORMANCE" : "NORMAL" 
+    },
+    { 
+      title: "Pending Review", 
+      value: pendingSubmissions, 
+      icon: Clock, 
+      color: "bg-slate-800/40", 
+      trend: pendingSubmissions > 10 ? "NEEDS ATTENTION" : "STABLE" 
+    },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="h-[80vh] flex flex-col items-center justify-center gap-4">
+        <Loader2 className="h-10 w-10 text-purple-500 animate-spin" />
+        <p className="text-slate-500 font-medium animate-pulse">Loading Analytics...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 md:space-y-6 pb-6">
+      <Toaster position="top-center" richColors theme="dark" />
+      
       {/* Welcome Banner */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
@@ -40,10 +116,12 @@ export default function InstructorDashboard() {
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-tight text-white">
               Welcome back, <br className="sm:hidden" />
-              <span className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Professor Ashik!</span>
+              <span className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+                {user ? `Professor ${user.name.split(' ')[0]}!` : "Professor!"}
+              </span>
             </h1>
             <p className="max-w-md text-xs md:text-sm text-slate-500 leading-relaxed font-medium">
-              Your students are making great progress. You have <span className="font-bold text-white/80">56 submissions</span> waiting for review.
+              Your students are making progress. You have <span className="font-bold text-white/80">{pendingSubmissions} submissions</span> waiting for review.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <Button className="cursor-pointer w-full sm:w-auto bg-gradient-to-r from-purple-900 to-slate-900 hover:from-purple-800 hover:to-slate-800 text-slate-200 font-semibold rounded-lg px-6 h-11 md:h-10 shadow-xl shadow-black/40 text-xs transition-all duration-300 border border-white/5">
@@ -55,15 +133,13 @@ export default function InstructorDashboard() {
             </div>
           </div>
 
-          {/* Premium Floating Analytics Animation - Now visible on Mobile */}
           <div className="flex relative h-40 w-full lg:w-64 items-center justify-center overflow-hidden">
-             {/* Animated Bar Chart */}
              <div className="flex items-end gap-2 px-4 h-24">
-                {[40, 70, 45, 90, 60].map((height, i) => (
+                {(statsData?.difficultyStats?.length ? statsData.difficultyStats : [{count: 40}, {count: 70}, {count: 45}, {count: 90}, {count: 60}]).map((stat: any, i: number) => (
                     <motion.div
                         key={i}
                         initial={{ height: 0 }}
-                        animate={{ height: `${height}%` }}
+                        animate={{ height: `${Math.min(stat.count * 10 || 40, 100)}%` }}
                         transition={{
                             duration: 1.5,
                             repeat: Infinity,
@@ -91,15 +167,8 @@ export default function InstructorDashboard() {
              >
                 <GraduationCap className="h-6 w-6 text-indigo-400/60" />
              </motion.div>
-
-             <motion.div
-                animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute center h-32 w-32 rounded-full bg-purple-500/10 blur-2xl -z-10"
-             />
           </div>
         </div>
-        <div className="absolute -right-10 -top-10 h-64 w-64 rounded-full bg-purple-600/5 blur-[100px]" />
       </motion.div>
 
       {/* Stats Grid */}
@@ -134,31 +203,30 @@ export default function InstructorDashboard() {
       >
         <Card className="lg:col-span-2 overflow-hidden border-none bg-slate-950/20 backdrop-blur-md min-h-[250px] md:h-[280px] flex flex-col items-center justify-center border border-white/5 border-dashed p-8">
              <BarChart3 className="h-10 w-10 text-slate-800 mb-4" />
-             <p className="text-slate-600 font-medium text-base tracking-tight text-center">Performance Statistics Overview</p>
-             <p className="text-slate-700 text-[11px] text-center max-w-sm mt-2 leading-relaxed">
-               Your students' data analytics and performance metrics will be available here after the next sync.
+             <p className="text-slate-400 font-medium text-base tracking-tight text-center">Analytics Visualization Ready</p>
+             <p className="text-slate-600 text-[11px] text-center max-w-sm mt-2 leading-relaxed">
+               Distribution: {statsData?.difficultyStats?.map((d: any) => `${d._id}: ${d.count}`).join(', ') || 'No data available'}
              </p>
         </Card>
         
         <Card className="overflow-hidden border-none bg-slate-950/20 backdrop-blur-md h-auto lg:h-[280px] p-5 border border-white/5">
             <h3 className="font-bold text-slate-300 mb-5 flex items-center gap-2 text-[13px] tracking-tight">
                 <Clock className="h-4 w-4 text-purple-600" />
-                Recent Activity
+                Submission Status
             </h3>
             <div className="space-y-5">
-                {[1,2,3].map((i) => (
-                    <div key={i} className="flex gap-4 items-start border-b border-white/5 pb-4 last:border-0 last:pb-0">
-                        <div className="h-2 w-2 rounded-full bg-slate-700 mt-1.5 shrink-0" />
-                        <div>
-                            <p className="text-[11px] font-medium text-slate-300 leading-tight">New assignment submission received from student</p>
-                            <p className="text-[9px] text-slate-500 mt-1 uppercase font-semibold">2 min ago</p>
+                {statsData?.submissionStats?.length ? statsData.submissionStats.map((s: any) => (
+                    <div key={s._id} className="flex gap-4 items-center border-b border-white/5 pb-4 last:border-0 last:pb-0">
+                        <div className={`h-2.5 w-2.5 rounded-full ${s._id === 'approved' ? 'bg-green-500' : s._id === 'pending' ? 'bg-yellow-500' : 'bg-red-500'} shrink-0`} />
+                        <div className="flex justify-between w-full items-center">
+                            <p className="text-[12px] font-bold text-slate-300 uppercase tracking-wider">{s._id}</p>
+                            <p className="text-[14px] text-purple-400 font-bold">{s.count}</p>
                         </div>
                     </div>
-                ))}
+                )) : (
+                  <p className="text-slate-600 text-xs text-center py-10">No recent activity found</p>
+                )}
             </div>
-            <Button variant="ghost" className="cursor-pointer w-full mt-4 text-[11px] text-slate-400 hover:text-slate-200 hover:bg-white/5 h-9">
-                View All Activity
-            </Button>
         </Card>
       </motion.div>
     </div>
