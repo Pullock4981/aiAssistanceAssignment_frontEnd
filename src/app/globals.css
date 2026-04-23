@@ -1,26 +1,52 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+@theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  /* Default to a very deep dark theme since user wants forced dark */
+  --background: oklch(0.1 0.01 250); /* Near Black */
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.14 0.02 250); /* Dark Slate */
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.1 0.01 250);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.5 0.2 260); /* Indigo */
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.2 0.02 250);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.2 0.02 250);
+  --muted-foreground: oklch(0.6 0 0);
+  --accent: oklch(0.2 0.02 250);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.5 0.2 25);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.2 0.02 250);
+  --input: oklch(0.2 0.02 250);
+  --ring: oklch(0.5 0.2 260);
+  --radius: 0.75rem;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Dark mode forced variables */
+.dark {
+  --background: oklch(0.08 0.01 250); /* Even Darker */
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.12 0.01 250);
+  --card-foreground: oklch(0.985 0 0);
+  --border: oklch(0.18 0.01 250);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: #020617; /* Deep Slate Black */
+    color: var(--foreground);
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.07) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.05) 0px, transparent 50%);
+  }
 }
