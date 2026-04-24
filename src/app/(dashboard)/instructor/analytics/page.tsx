@@ -75,7 +75,6 @@ export default function AnalyticsDashboard() {
 
   return (
     <div className="space-y-6 pb-10">
-      <Toaster position="top-center" richColors theme="dark" />
       
       {/* Header */}
       <div className="px-4 pt-4 shrink-0">

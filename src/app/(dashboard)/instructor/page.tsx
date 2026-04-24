@@ -32,7 +32,15 @@ export default function InstructorDashboard() {
     const token = localStorage.getItem("token");
     
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser);
+      if (parsedUser.role !== 'instructor') {
+          router.push('/student');
+          return;
+      }
+      setUser(parsedUser);
+    } else {
+        router.push('/login');
+        return;
     }
 
     const fetchStats = async () => {
@@ -57,15 +65,17 @@ export default function InstructorDashboard() {
   }, []);
 
   const totalSubmissions = statsData?.submissionStats?.reduce((acc: number, curr: any) => acc + curr.count, 0) || 0;
-  const pendingSubmissions = statsData?.submissionStats?.find((s: any) => s._id === 'pending')?.count || 0;
-  const approvedSubmissions = statsData?.submissionStats?.find((s: any) => s._id === 'approved')?.count || 0;
-  const approvalRate = totalSubmissions > 0 ? Math.round((approvedSubmissions / totalSubmissions) * 100) : 0;
+  const pendingSubmissions  = statsData?.submissionStats?.find((s: any) => s._id === 'pending')?.count || 0;
+  const acceptedSubmissions = statsData?.submissionStats?.find((s: any) => s._id === 'accepted')?.count || 0;
+  const needsImprovCount    = statsData?.submissionStats?.find((s: any) => s._id === 'needs-improvement')?.count || 0;
+  const approvalRate = totalSubmissions > 0 ? Math.round((acceptedSubmissions / totalSubmissions) * 100) : 0;
 
   const stats = [
-    { title: "Assignments", value: statsData?.totalAssignments || "0", icon: FileText, color: "bg-purple-900/40", trend: "+0 WK" },
-    { title: "Submissions", value: totalSubmissions, icon: Users, color: "bg-violet-900/40", trend: "LIVE" },
-    { title: "Approval", value: `${approvalRate}%`, icon: CheckCircle, color: "bg-fuchsia-900/40", trend: "PERF" },
-    { title: "Pending", value: pendingSubmissions, icon: Clock, color: "bg-slate-800/40", trend: "ATTN" },
+    { title: "Assignments",      value: statsData?.totalAssignments ?? "0", icon: FileText,    color: "bg-purple-900/40",  borderColor: "border-purple-500/10", trend: "TOTAL" },
+    { title: "Submissions",      value: totalSubmissions,                    icon: Users,       color: "bg-violet-900/40",  borderColor: "border-violet-500/10", trend: "LIVE"  },
+    { title: "Accepted",         value: acceptedSubmissions,                 icon: CheckCircle, color: "bg-green-900/40",   borderColor: "border-green-500/10",  trend: "PERF"  },
+    { title: "Pending",          value: pendingSubmissions,                  icon: Clock,       color: "bg-slate-800/40",   borderColor: "border-slate-500/10",  trend: "ATTN"  },
+    { title: "Needs Improvement",value: needsImprovCount,                    icon: TrendingUp,  color: "bg-orange-900/40", borderColor: "border-orange-500/10", trend: "REVW"  },
   ];
 
   // Prepare Chart Data
@@ -113,33 +123,32 @@ export default function InstructorDashboard() {
   }
 
   return (
-    <div className="space-y-3 pb-2 h-[calc(100vh-100px)] flex flex-col">
-      <Toaster position="top-center" richColors theme="dark" />
+    <div className="space-y-4 md:space-y-6 pb-8 min-h-screen flex flex-col">
       
-      {/* Welcome Banner - More Compact but High Impact */}
+      {/* Welcome Banner - Compact but High Impact */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-2xl md:rounded-[2rem] bg-gradient-to-br from-slate-950 via-purple-950/40 to-slate-900 p-5 md:p-8 text-white shadow-2xl border border-white/5 shrink-0"
+        className="relative overflow-hidden rounded-xl md:rounded-2xl bg-gradient-to-br from-slate-950 via-purple-950/40 to-slate-900 p-5 md:p-7 text-white shadow-2xl border border-white/5 shrink-0"
       >
         <div className="relative z-10 flex flex-col-reverse md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-2 md:space-y-3 text-center md:text-left md:w-1/2 mt-4 md:mt-0 z-10">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-[8px] md:text-[10px] font-medium backdrop-blur-md border border-white/10 mx-auto md:mx-0">
-              <Sparkles className="h-3 w-3 md:h-4 md:w-4 text-purple-500" />
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-[10px] md:text-xs font-medium backdrop-blur-md border border-white/10 mx-auto md:mx-0">
+              <Sparkles className="h-3.5 w-3.5 md:h-4 md:w-4 text-purple-500" />
               <span className="text-slate-400 font-bold uppercase tracking-widest">Instructor Overview</span>
             </div>
-            <h1 className="text-xl md:text-3xl font-black tracking-tight leading-tight text-white uppercase relative z-10">
+            <h1 className="text-3xl md:text-5xl font-black tracking-tighter leading-none text-white uppercase relative z-10">
               Welcome, <span className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
                 {user ? `${user.name.split(' ')[0]}!` : "Professor!"}
               </span>
             </h1>
-            <p className="max-w-md text-[10px] md:text-xs text-slate-500 leading-relaxed font-medium mx-auto md:mx-0 relative z-10">
-              You have <span className="font-bold text-white/80">{pendingSubmissions} submissions</span> to review today.
+            <p className="max-w-md text-xs md:text-lg text-slate-400/80 leading-relaxed font-medium mx-auto md:mx-0 relative z-10">
+              You have <span className="font-bold text-purple-400">{pendingSubmissions} submissions</span> to review today.
             </p>
-            <div className="flex justify-center md:justify-start pt-1 relative z-10">
+            <div className="flex justify-center md:justify-start pt-2 relative z-10">
                 <Link href="/instructor/assignments/create" className="w-full md:w-auto">
                     <Button 
-                      className="cursor-pointer w-full md:w-auto font-black rounded-xl px-8 h-10 text-[9px] md:text-[10px] uppercase tracking-widest"
+                      className="cursor-pointer w-full md:w-auto font-black rounded-lg px-8 h-12 text-xs md:text-sm uppercase tracking-widest shadow-2xl hover:scale-105 transition-transform"
                     >
                        <Plus className="mr-2 h-4 w-4" /> New Assignment
                     </Button>
@@ -209,22 +218,22 @@ export default function InstructorDashboard() {
       </motion.div>
 
       {/* Stats Grid - Balanced */}
-      <motion.div variants={container} initial="hidden" animate="show" className="grid gap-3 grid-cols-2 lg:grid-cols-4 shrink-0">
+      <motion.div variants={container} initial="hidden" animate="show" className="grid gap-4 md:gap-6 grid-cols-2 lg:grid-cols-5 shrink-0 py-2 md:py-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
             <motion.div variants={item} key={stat.title}>
-              <Card className="group relative overflow-hidden bg-slate-950/40 backdrop-blur-xl border border-white/10 transition-all hover:bg-slate-900/40 rounded-xl md:rounded-[1.5rem] shadow-xl">
-                <CardContent className="p-3 md:p-5">
-                  <div className="flex items-center justify-between mb-2 md:mb-3">
-                    <div className={`rounded-lg md:rounded-xl ${stat.color} p-2 md:p-2.5 text-slate-400 border border-white/5 group-hover:scale-110 transition-transform duration-500`}>
-                      <Icon className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              <Card className={`group relative overflow-hidden bg-slate-950/40 backdrop-blur-xl border ${stat.borderColor} transition-all hover:bg-slate-900/40 hover:border-white/40 rounded-lg md:rounded-xl shadow-xl h-full md:h-48`}>
+                <CardContent className="p-4 md:p-6 h-full flex flex-col justify-between">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className={`rounded-lg md:rounded-xl ${stat.color} p-1.5 md:p-2 text-slate-400 border border-white/5 group-hover:scale-110 transition-transform duration-500`}>
+                      <Icon className="h-4 w-4 md:h-5 md:w-5" />
                     </div>
-                    <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-slate-600">{stat.trend}</span>
+                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-slate-600">{stat.trend}</span>
                   </div>
-                  <div className="space-y-0.5">
-                    <h3 className="text-[8px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest">{stat.title}</h3>
-                    <div className="text-xl md:text-2xl font-black text-white tracking-tighter">{stat.value}</div>
+                  <div className="space-y-1 mt-auto">
+                    <h3 className="text-[10px] md:text-[11px] font-bold text-slate-500 uppercase tracking-widest truncate">{stat.title}</h3>
+                    <div className="text-3xl md:text-5xl font-black text-white tracking-tighter leading-none">{stat.value}</div>
                   </div>
                 </CardContent>
               </Card>
@@ -233,20 +242,16 @@ export default function InstructorDashboard() {
         })}
       </motion.div>
 
-      {/* Main Sections - Dynamic Height */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-        className="grid gap-3 grid-cols-1 lg:grid-cols-3 flex-1 min-h-0 pb-10 md:pb-0"
+        className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-3 shrink-0 h-auto min-h-[400px] pb-6"
       >
-        <Card className="lg:col-span-2 overflow-hidden bg-slate-950/40 backdrop-blur-md flex flex-col border border-white/10 p-5 md:p-6 rounded-2xl md:rounded-[2rem]">
+        <Card className="lg:col-span-2 min-h-0 overflow-hidden bg-slate-950/40 backdrop-blur-md flex flex-col border border-white/10 p-3 md:p-4 rounded-xl md:rounded-2xl h-[350px] md:h-auto">
             <h3 className="font-black text-white mb-2 flex items-center gap-2 text-[10px] md:text-xs uppercase tracking-widest shrink-0">
                 <BarChart3 className="h-3.5 w-3.5 md:h-4 md:w-4 text-purple-600" />
                 Difficulty Distribution
             </h3>
-            <p className="text-slate-500 text-[9px] md:text-[10px] font-medium mb-4">
-                Analyze how many assignments you've created per difficulty level.
-            </p>
-            <div className="h-[200px] sm:h-[250px] w-full md:flex-1 md:min-h-[200px]">
+            <div className="h-full w-full flex-1 min-h-0">
                 {barData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -273,15 +278,12 @@ export default function InstructorDashboard() {
             </div>
         </Card>
         
-        <Card className="overflow-hidden bg-slate-950/40 backdrop-blur-md p-5 md:p-6 border border-white/10 rounded-2xl md:rounded-[2rem] flex flex-col min-h-0">
+        <Card className="min-h-0 overflow-hidden bg-slate-950/40 backdrop-blur-md p-3 md:p-4 border border-white/10 rounded-xl md:rounded-2xl flex flex-col h-[350px] md:h-auto">
             <h3 className="font-black text-white mb-2 flex items-center gap-2 text-[10px] md:text-xs uppercase tracking-widest shrink-0">
                 <Clock className="h-3.5 w-3.5 md:h-4 md:w-4 text-purple-600" />
                 Submission Rates
             </h3>
-            <p className="text-slate-500 text-[9px] md:text-[10px] font-medium mb-4">
-                Overall status of student submissions.
-            </p>
-            <div className="h-[200px] sm:h-[250px] w-full relative flex items-center justify-center md:flex-1 md:min-h-[200px]">
+            <div className="h-full w-full relative flex items-center justify-center flex-1 min-h-0">
                 {pieData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>

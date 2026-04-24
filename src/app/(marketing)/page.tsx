@@ -277,9 +277,7 @@ export default function HomePage() {
               >
                   Go to Dashboard <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button variant="outline" size="lg" className="cursor-pointer w-full sm:w-auto h-12 px-10 rounded-full border-white/10 text-white hover:bg-white/5 font-bold text-xs transition-all">
-                 Watch Demo
-              </Button>
+
             </motion.div>
           </div>
         </section>

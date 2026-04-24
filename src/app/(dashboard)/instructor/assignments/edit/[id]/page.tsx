@@ -112,7 +112,6 @@ export default function EditAssignment() {
 
   return (
     <div className="flex flex-col h-full space-y-6 pb-6 overflow-y-auto custom-scrollbar pr-1">
-      <Toaster position="top-center" richColors theme="dark" />
       
       {/* Header Area */}
       <div className="flex items-center justify-between px-4 pt-2 md:pt-4">

@@ -23,9 +23,12 @@ export default function StudentDashboard() {
   const [user, setUser] = useState<any>(null);
   const [stats, setStats] = useState({
     total: 0,
-    completed: 0,
-    pending: 0
+    accepted: 0,
+    pending: 0,
+    needsImprovement: 0
   });
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [loadingActivities, setLoadingActivities] = useState(true);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -33,25 +36,67 @@ export default function StudentDashboard() {
       router.push("/login");
       return;
     }
-    setUser(JSON.parse(storedUser));
+    const parsedUser = JSON.parse(storedUser);
+    if (parsedUser.role !== 'student') {
+        router.push('/instructor');
+        return;
+    }
+    setUser(parsedUser);
     
-    // Fetch basic stats
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-        const response = await axios.get(`${apiUrl}/assignments`, {
+        
+        // Fetch all assignments for total count
+        const assignmentsRes = await axios.get(`${apiUrl}/assignments`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
-        if (response.data.success) {
-          setStats(prev => ({ ...prev, total: response.data.data.length }));
+        // Fetch my submissions
+        const submissionsRes = await axios.get(`${apiUrl}/submissions/my-submissions`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        let total = 0;
+        if (assignmentsRes.data.success) {
+          total = assignmentsRes.data.data.length;
         }
+
+        let accepted = 0;
+        let pending = 0;
+        let needsImprovement = 0;
+        let activities = [];
+
+        if (submissionsRes.data.success) {
+          const subs = submissionsRes.data.data;
+          const allAssignments = assignmentsRes.data.success ? assignmentsRes.data.data : [];
+
+          accepted = subs.filter((s: any) => s.status === 'accepted').length;
+          pending = subs.filter((s: any) => s.status === 'pending').length;
+          needsImprovement = subs.filter((s: any) => s.status === 'needs-improvement').length;
+          
+          // Sort by newest first and take top 5
+          activities = subs.map((sub: any) => {
+              let assignmentObj = sub.assignment;
+              if (typeof sub.assignment === 'string') {
+                  assignmentObj = allAssignments.find((a: any) => a._id === sub.assignment);
+              } else if (sub.assignment && !sub.assignment.title) {
+                  assignmentObj = allAssignments.find((a: any) => a._id === sub.assignment._id);
+              }
+              return { ...sub, resolvedAssignment: assignmentObj };
+          }).sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
+        }
+
+        setStats({ total, accepted, pending, needsImprovement });
+        setRecentActivities(activities);
       } catch (error) {
-        console.error("Failed to fetch dashboard stats");
+        console.error("Failed to fetch dashboard data", error);
+      } finally {
+        setLoadingActivities(false);
       }
     };
-    fetchStats();
+    fetchData();
   }, [router]);
 
   const container = {
@@ -68,14 +113,13 @@ export default function StudentDashboard() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)] space-y-4 md:space-y-6">
-      <Toaster position="top-center" richColors theme="dark" />
+    <div className="flex flex-col min-h-screen space-y-4 md:space-y-6 pb-10">
       
       {/* Welcome Section */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative overflow-hidden rounded-2xl md:rounded-[2.5rem] bg-gradient-to-br from-indigo-950 via-slate-950 to-purple-950 p-6 md:p-10 border border-white/5 shadow-2xl shrink-0"
+        className="relative overflow-hidden rounded-2xl md:rounded-[2rem] bg-gradient-to-br from-indigo-950 via-slate-950 to-purple-950 p-5 md:p-8 border border-white/5 shadow-2xl shrink-0"
       >
         <div className="relative z-10 flex flex-col-reverse md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-4 text-center md:text-left md:w-1/2 mt-4 md:mt-0 z-10 relative">
@@ -83,19 +127,19 @@ export default function StudentDashboard() {
               <Sparkles className="h-4 w-4 text-purple-400" />
               <span className="text-[10px] font-black text-purple-200 uppercase tracking-widest">Student Portal</span>
             </div>
-            <h1 className="text-2xl md:text-5xl font-black text-white uppercase tracking-tight leading-none relative z-10">
+            <h1 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tight leading-none relative z-10">
               Welcome back, <br className="md:hidden" />
               <span className="bg-gradient-to-r from-purple-400 to-indigo-300 bg-clip-text text-transparent">
                 {user ? user.name.split(' ')[0] : "Student"}!
               </span>
             </h1>
-            <p className="max-w-md text-xs md:text-sm text-slate-400 font-medium leading-relaxed mx-auto md:mx-0 relative z-10">
+            <p className="max-w-md text-[10px] md:text-xs text-slate-400 font-medium leading-relaxed mx-auto md:mx-0 relative z-10">
               You have <span className="text-white font-bold">{stats.total} total assignments</span> available to complete. Keep pushing your limits!
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-2 justify-center md:justify-start relative z-10">
-               <Link href="/student/assignments">
-                  <Button className="w-full sm:w-auto h-12 rounded-xl px-8 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-purple-500/10">
+                <Link href="/student/assignments">
+                  <Button className="w-full sm:w-auto h-10 md:h-11 rounded-xl px-6 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-purple-500/10">
                      View Assignments <ArrowUpRight className="ml-2 h-4 w-4" />
                   </Button>
                </Link>
@@ -163,49 +207,103 @@ export default function StudentDashboard() {
         </div>
       </motion.div>
 
-      {/* Stats Cards */}
-      <motion.div 
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 shrink-0"
-      >
+      {/* Stats Cards Section */}
+      <div className="space-y-3 md:space-y-4">
+        <h3 className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Learning Progress</h3>
+        <motion.div 
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-4 shrink-0"
+        >
         {[
-          { title: "Total Tasks", value: stats.total, icon: BookOpen, color: "bg-blue-500/10 text-blue-400" },
-          { title: "Completed", value: stats.completed, icon: CheckCircle2, color: "bg-green-500/10 text-green-400" },
-          { title: "Pending", value: stats.total - stats.completed, icon: Timer, color: "bg-orange-500/10 text-orange-400" }
+          { title: "Total Tasks",        value: stats.total,           icon: BookOpen,    color: "bg-blue-500/10 text-blue-400",   border: "hover:border-blue-500/30" },
+          { title: "Accepted",           value: stats.accepted,         icon: CheckCircle2, color: "bg-green-500/10 text-green-400",  border: "hover:border-green-500/30" },
+          { title: "Pending Review",     value: stats.pending,          icon: Timer,       color: "bg-orange-500/10 text-orange-400", border: "hover:border-orange-500/30" },
+          { title: "Needs Improvement",  value: stats.needsImprovement, icon: BookOpen,    color: "bg-red-500/10 text-red-400",     border: "hover:border-red-500/30" },
         ].map((stat, i) => (
           <motion.div key={i} variants={item}>
-            <Card className="bg-slate-950/40 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-3xl hover:bg-white/5 transition-all group shadow-xl">
-              <CardContent className="p-4 md:p-6 flex items-center justify-between">
+            <Card className={`bg-slate-950/40 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-3xl ${stat.border} hover:bg-white/5 transition-all group shadow-xl`}>
+              <CardContent className="p-4 md:p-5 flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{stat.title}</p>
                   <p className="text-2xl md:text-3xl font-black text-white">{stat.value}</p>
                 </div>
-                <div className={`h-12 w-12 rounded-xl ${stat.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                  <stat.icon className="h-6 w-6" />
+                <div className={`h-11 w-11 rounded-xl ${stat.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                  <stat.icon className="h-5 w-5" />
                 </div>
               </CardContent>
             </Card>
           </motion.div>
         ))}
       </motion.div>
+    </div>
 
-      {/* Bottom Activity Section */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="flex-1 min-h-0 pb-10 md:pb-0"
+        className="pb-10 md:pb-0"
       >
-        <Card className="h-full bg-slate-950/20 backdrop-blur-md border border-white/10 border-dashed rounded-[2rem] flex flex-col items-center justify-center p-8 text-center">
-            <div className="h-16 w-16 rounded-3xl bg-white/5 flex items-center justify-center mb-6">
-                <Clock className="h-8 w-8 text-slate-700" />
-            </div>
-            <h3 className="text-xl font-black text-slate-300 uppercase tracking-tight">Recent Activity</h3>
-            <p className="text-slate-600 text-xs mt-2 max-w-sm font-medium leading-relaxed">
-                Your recent assignment submissions and progress will be tracked here. Start your first assignment to see updates!
-            </p>
+        <Card className="bg-slate-950/20 backdrop-blur-md border border-white/10 border-dashed rounded-[2rem] flex flex-col p-6 md:p-8">
+            <h3 className="text-xl font-black text-slate-300 uppercase tracking-tight mb-6 flex items-center gap-2">
+                <Clock className="h-5 w-5 text-purple-500" /> Recent Activity
+            </h3>
+            
+            {loadingActivities ? (
+               <div className="flex-1 flex items-center justify-center">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-500 border-t-transparent" />
+               </div>
+            ) : recentActivities.length > 0 ? (
+               <div className="space-y-4">
+                 {recentActivities.map((activity, index) => (
+                    <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 md:p-4 rounded-xl md:rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors gap-4">
+                       <div className="flex items-center gap-3 md:gap-4">
+                          <div className={`h-9 w-9 md:h-10 md:w-10 rounded-lg md:rounded-xl flex items-center justify-center shrink-0 ${
+                             activity.status === 'accepted' ? 'bg-green-500/20 text-green-400' :
+                             activity.status === 'pending' ? 'bg-orange-500/20 text-orange-400' :
+                             'bg-red-500/20 text-red-400'
+                          }`}>
+                             {activity.status === 'accepted' ? <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5" /> :
+                              activity.status === 'pending' ? <Timer className="h-4 w-4 md:h-5 md:w-5" /> :
+                              <BookOpen className="h-4 w-4 md:h-5 md:w-5" />}
+                          </div>
+                           <div className="min-w-0">
+                             <h4 className="text-[12px] md:text-sm font-bold text-white truncate pr-2">
+                               {activity.resolvedAssignment?.title || activity.assignment?.title || 'Unknown Assignment'}
+                             </h4>
+                             <p className="text-[9px] md:text-[10px] font-medium text-slate-400 uppercase tracking-widest mt-0.5">
+                                {new Date(activity.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                             </p>
+                          </div>
+                       </div>
+                       <div className="flex items-center justify-between sm:justify-end gap-2 md:gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/5">
+                           <div className={`px-2 md:px-3 py-0.5 md:py-1 text-[8px] md:text-[10px] font-black uppercase tracking-widest rounded-full border ${
+                              activity.status === 'accepted' ? 'bg-green-500/10 border-green-500/20 text-green-400' :
+                              activity.status === 'pending' ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' :
+                              'bg-red-500/10 border-red-500/20 text-red-400'
+                           }`}>
+                              {activity.status}
+                           </div>
+                           <Link href="/student/submissions">
+                               <Button variant="ghost" size="sm" className="h-7 text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-slate-300 hover:text-white hover:bg-white/10 rounded-lg">
+                                   View Details
+                               </Button>
+                           </Link>
+                       </div>
+                    </div>
+                 ))}
+               </div>
+            ) : (
+                <div className="flex-1 flex flex-col items-center justify-center text-center opacity-70">
+                    <div className="h-16 w-16 rounded-3xl bg-white/5 flex items-center justify-center mb-6">
+                        <Clock className="h-8 w-8 text-slate-700" />
+                    </div>
+                    <p className="text-slate-500 text-sm max-w-sm font-medium leading-relaxed">
+                        Your recent assignment submissions and progress will be tracked here. Start your first assignment to see updates!
+                    </p>
+                </div>
+            )}
         </Card>
       </motion.div>
     </div>

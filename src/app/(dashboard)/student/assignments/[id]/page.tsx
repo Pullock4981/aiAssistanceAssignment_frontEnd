@@ -201,7 +201,6 @@ export default function StudentAssignmentDetails() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-100px)] space-y-4 md:space-y-6 overflow-y-auto custom-scrollbar pr-1 pb-10">
-      <Toaster position="top-center" richColors theme="dark" />
       
       {/* Header */}
       <div className="flex items-center gap-4 md:gap-6 px-2 pt-2 shrink-0">

@@ -87,7 +87,6 @@ export default function CreateAssignment() {
 
   return (
     <div className="flex flex-col h-full space-y-4 pb-4 overflow-y-auto custom-scrollbar pr-1">
-      <Toaster position="top-center" richColors theme="dark" />
       
       {/* Header Area */}
       <div className="flex items-center justify-between px-2 pt-2">
