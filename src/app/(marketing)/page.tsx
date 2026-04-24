@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 // Premium Floating Element Component
-const FloatingElement = ({ children, delay = 0, x = 0, y = 0 }) => (
+const FloatingElement = ({ children, delay = 0, x = 0, y = 0 }: { children: React.ReactNode; delay?: number; x?: number; y?: number }) => (
   <motion.div
     animate={{
       y: [y, y - 20, y],
@@ -133,11 +133,33 @@ const HeroBackground = () => {
 };
 
 export default function HomePage() {
+  const router = useRouter();
   const navLinks = [
     { name: "Features", href: "#features" },
     { name: "About", href: "#about" },
     { name: "Pricing", href: "#pricing" },
   ];
+
+  const handleDashboardRedirect = () => {
+    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+
+    if (!token || !storedUser) {
+      router.push("/login");
+      return;
+    }
+
+    try {
+      const user = JSON.parse(storedUser);
+      if (user.role === "student") {
+        router.push("/student");
+      } else {
+        router.push("/instructor");
+      }
+    } catch (error) {
+      router.push("/login");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-white overflow-x-hidden selection:bg-purple-500/30 scroll-smooth">
@@ -168,8 +190,7 @@ export default function HomePage() {
                   <Link href="/login" className="text-lg font-medium text-slate-400 hover:text-white transition-colors">Sign In</Link>
                 </nav>
                 <Button 
-                  render={<Link href="/register" />}
-                  nativeButton={false}
+                  onClick={handleDashboardRedirect}
                   className="w-full mt-auto bg-gradient-to-r from-purple-900 to-slate-900 text-white font-bold h-12 rounded-xl"
                 >
                   Get Started
@@ -199,8 +220,7 @@ export default function HomePage() {
         <div className="flex items-center gap-2 md:gap-4">
            <Link href="/login" className="hidden sm:block text-[13px] font-medium text-slate-400 hover:text-white transition-colors mr-2">Sign In</Link>
            <Button 
-             render={<Link href="/register" />}
-             nativeButton={false}
+             onClick={handleDashboardRedirect}
              className="cursor-pointer h-9 bg-gradient-to-r from-purple-900 to-slate-900 hover:from-purple-800 hover:to-slate-800 text-slate-200 rounded-full px-4 md:px-6 shadow-xl shadow-black/40 font-bold transition-all duration-300 border border-white/5 text-[11px] md:text-[12px]"
            >
               Get Started
@@ -251,8 +271,7 @@ export default function HomePage() {
               className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-4 pt-4"
             >
               <Button 
-                render={<Link href="/instructor" className="flex items-center" />}
-                nativeButton={false}
+                onClick={handleDashboardRedirect}
                 size="lg" 
                 className="cursor-pointer w-full sm:w-auto h-12 px-10 rounded-full bg-gradient-to-r from-purple-900 to-slate-900 hover:from-purple-800 hover:to-slate-800 text-slate-200 font-bold text-xs shadow-xl shadow-black/40 transition-all group border border-white/5"
               >

@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -10,13 +10,15 @@ import {
   BarChart3, 
   LogOut,
   GraduationCap,
-  ChevronRight
+  ChevronRight,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
-const Sidebar = ({ role = "instructor" }: { role?: "instructor" | "student" }) => {
+const Sidebar = ({ role = "instructor", onClose }: { role?: "instructor" | "student", onClose?: () => void }) => {
   const pathname = usePathname();
+  const router = useRouter();
   const [user, setUser] = React.useState<any>(null);
 
   React.useEffect(() => {
@@ -37,11 +39,25 @@ const Sidebar = ({ role = "instructor" }: { role?: "instructor" | "student" }) =
     { name: "My Submissions", href: "/student/submissions", icon: FileText },
   ];
 
+  const handleSignOut = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    router.push("/");
+  };
+
   return (
-    <div className="flex h-screen w-72 flex-col bg-slate-950 text-white border-r border-white/5">
+    <div className="flex h-screen w-full flex-col bg-slate-950 text-white border-r border-white/5 relative">
+      {/* Mobile Close Button */}
+      <button 
+        onClick={onClose}
+        className="lg:hidden absolute right-4 top-4 p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white transition-colors z-50"
+      >
+        <X className="h-5 w-5" />
+      </button>
+
       {/* Logo Area - Adjusted for mobile overlap */}
       <div className="flex h-16 items-center justify-start px-6 border-b border-white/5">
-        <Link href="/" className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3" onClick={onClose}>
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-900/30 border border-purple-500/20 shadow-lg shadow-purple-500/5">
             <GraduationCap className="h-5 w-5 text-purple-400" />
           </div>
@@ -62,6 +78,7 @@ const Sidebar = ({ role = "instructor" }: { role?: "instructor" | "student" }) =
                 key={item.name}
                 href={item.href}
                 className="block group"
+                onClick={onClose}
               >
                 <div
                   className={cn(
@@ -110,7 +127,10 @@ const Sidebar = ({ role = "instructor" }: { role?: "instructor" | "student" }) =
             <span className="text-[9px] text-slate-600 uppercase tracking-[0.2em] font-bold">{role}</span>
           </div>
         </div>
-        <button className="cursor-pointer mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-white/5 bg-white/5 px-4 py-2.5 text-[12px] font-semibold text-slate-500 transition-all hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 shadow-sm">
+        <button 
+          onClick={handleSignOut}
+          className="cursor-pointer mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-white/5 bg-white/5 px-4 py-2.5 text-[12px] font-semibold text-slate-500 transition-all hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 shadow-sm"
+        >
           <LogOut className="h-3.5 w-3.5" />
           Sign Out
         </button>

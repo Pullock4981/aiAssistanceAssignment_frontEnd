@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { GraduationCap, Bell, Search, UserCircle } from "lucide-react";
+import { GraduationCap, Bell, Search, UserCircle, Menu } from "lucide-react";
 import { motion } from "framer-motion";
 
-export default function Navbar({ role }: { role?: string }) {
+export default function Navbar({ role, onMenuClick }: { role?: string, onMenuClick?: () => void }) {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
@@ -17,13 +17,21 @@ export default function Navbar({ role }: { role?: string }) {
 
   return (
     <nav className="flex h-16 w-full items-center justify-between px-4 md:px-8 border-b border-white/5 bg-slate-950/50 backdrop-blur-xl shrink-0">
-      <div className="flex items-center gap-6 w-full max-w-sm">
+      <div className="flex items-center gap-4 md:gap-6 w-full max-w-sm">
+        {/* Mobile Menu Button */}
+        <button 
+          onClick={onMenuClick}
+          className="lg:hidden p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white transition-colors"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+
         <div className="relative group w-full hidden sm:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-purple-400 transition-colors" />
           <input 
             type="text" 
             placeholder="Search anything.." 
-            className="w-full bg-white/5 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-xs text-slate-300 focus:outline-none focus:border-purple-500/30 focus:bg-white/10 transition-all"
+            className="w-full bg-white/5 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-xs text-slate-300 focus:outline-none focus:border-purple-500/30 focus:bg-white/10 transition-all shadow-inner"
           />
         </div>
       </div>
