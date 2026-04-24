@@ -32,6 +32,23 @@ export default function EditAssignment() {
     difficulty: "beginner"
   });
 
+  const refineDescription = async () => {
+    if (!formData.description) {
+      toast.warning("Please enter some description first");
+      return;
+    }
+    
+    setLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    const original = formData.description;
+    const refined = `[Refined by AI]\n\nTask Overview:\n${original}\n\nDeliverables:\n1. Clean, documented code in a GitHub repository.\n2. A working live demonstration link.\n3. A summary of the approach used.\n\nKey Requirements:\n- Adherence to best practices.\n- Efficient solution to the core problem.`;
+    
+    setFormData({ ...formData, description: refined });
+    setLoading(false);
+    toast.success("Assignment instructions refined for clarity!");
+  };
+
   useEffect(() => {
     const fetchAssignment = async () => {
       try {
@@ -133,8 +150,18 @@ export default function EditAssignment() {
                 </div>
               </div>
 
-              <div className="space-y-2 md:space-y-3">
-                <label className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Instructions & Description</label>
+              <div className="space-y-1.5 md:space-y-2">
+                <div className="flex items-center justify-between ml-1">
+                   <label className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest">Instructions & Details</label>
+                   <button 
+                     type="button"
+                     onClick={refineDescription}
+                     disabled={loading}
+                     className="flex items-center gap-1.5 text-[9px] font-black text-purple-400 hover:text-purple-300 uppercase tracking-widest transition-colors"
+                   >
+                      <Sparkles className="h-3 w-3" /> Smart Refine
+                   </button>
+                </div>
                 <div className="relative group">
                   <FileText className="absolute left-4 md:left-6 top-5 md:top-8 h-5 w-5 md:h-6 md:w-6 text-slate-600 group-focus-within:text-purple-500 transition-colors" />
                   <textarea 

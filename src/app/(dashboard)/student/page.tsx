@@ -1,191 +1,154 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { 
-  BookOpen, 
-  CheckCircle, 
-  Clock, 
-  Sparkles, 
-  Trophy, 
-  LayoutDashboard, 
-  FileCheck,
-  Zap,
-  Loader2
-} from "lucide-react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { 
+  Sparkles, 
+  Clock, 
+  CheckCircle2, 
+  Timer, 
+  LayoutDashboard,
+  ArrowUpRight,
+  BookOpen
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "sonner";
 import axios from "axios";
-import { toast, Toaster } from "sonner";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.1 } }
-};
-
-const item = {
-  hidden: { y: 20, opacity: 0 },
-  show: { y: 0, opacity: 1 }
-};
+import Link from "next/link";
 
 export default function StudentDashboard() {
+  const router = useRouter();
   const [user, setUser] = useState<any>(null);
-  const [statsData, setStatsData] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState({
+    total: 0,
+    completed: 0,
+    pending: 0
+  });
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
-    
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    if (!storedUser) {
+      router.push("/login");
+      return;
     }
-
-    const fetchStudentStats = async () => {
+    setUser(JSON.parse(storedUser));
+    
+    // Fetch basic stats
+    const fetchStats = async () => {
       try {
+        const token = localStorage.getItem("token");
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-        const response = await axios.get(`${apiUrl}/analytics/student`, {
+        const response = await axios.get(`${apiUrl}/assignments`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-
+        
         if (response.data.success) {
-          setStatsData(response.data.data);
+          setStats(prev => ({ ...prev, total: response.data.data.length }));
         }
-      } catch (error: any) {
-        console.error("Failed to fetch student stats:", error);
-        toast.error("Failed to load your progress data.");
-      } finally {
-        setIsLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch dashboard stats");
       }
     };
+    fetchStats();
+  }, [router]);
 
-    fetchStudentStats();
-  }, []);
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
 
-  const totalSubmissions = statsData?.totalSubmissions || 0;
-  const approved = statsData?.submissionStats?.find((s: any) => s._id === 'approved')?.count || 0;
-  const pending = statsData?.submissionStats?.find((s: any) => s._id === 'pending')?.count || 0;
-  const completionRate = totalSubmissions > 0 ? Math.round((approved / totalSubmissions) * 100) : 0;
-
-  const stats = [
-    { title: "My Submissions", value: totalSubmissions, icon: FileCheck, color: "bg-purple-900/40", trend: "TRACKING" },
-    { title: "Approved", value: approved, icon: CheckCircle, color: "bg-green-900/40", trend: "COMPLETED" },
-    { title: "Completion Rate", value: `${completionRate}%`, icon: Trophy, color: "bg-amber-900/40", trend: "OVERALL" },
-    { title: "Under Review", value: pending, icon: Clock, color: "bg-blue-900/40", trend: "PENDING" },
-  ];
-
-  if (isLoading) {
-    return (
-      <div className="h-[80vh] flex flex-col items-center justify-center gap-4">
-        <Loader2 className="h-10 w-10 text-purple-500 animate-spin" />
-        <p className="text-slate-500 font-medium animate-pulse">Loading Your Journey...</p>
-      </div>
-    );
-  }
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
 
   return (
-    <div className="space-y-4 md:space-y-6 pb-6">
+    <div className="flex flex-col h-[calc(100vh-100px)] space-y-4 md:space-y-6">
       <Toaster position="top-center" richColors theme="dark" />
       
-      {/* Welcome Banner */}
+      {/* Welcome Section */}
       <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-950 via-indigo-950/40 to-slate-900 p-4 md:p-6 text-white shadow-2xl border border-white/5"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="relative overflow-hidden rounded-2xl md:rounded-[2.5rem] bg-gradient-to-br from-indigo-950 via-slate-950 to-purple-950 p-6 md:p-10 border border-white/5 shadow-2xl shrink-0"
       >
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-[9px] font-medium backdrop-blur-md border border-white/10">
-              <Zap className="h-3 w-3 text-indigo-400" />
-              <span className="text-slate-400 uppercase tracking-widest">Student Dashboard</span>
-            </div>
-            <h1 className="text-xl md:text-3xl font-extrabold tracking-tight leading-tight">
-              Keep pushing, <br className="md:hidden" />
-              <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-                {user ? user.name.split(' ')[0] : "Learner"}!
-              </span>
-            </h1>
-            <p className="max-w-md text-[11px] text-slate-500 leading-relaxed font-medium">
-              You've completed <span className="text-indigo-400 font-bold">{completionRate}%</span> of tasks.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-2 pt-1">
-                <Button className="cursor-pointer w-full sm:w-auto bg-gradient-to-r from-purple-900 to-slate-900 hover:from-purple-800 hover:to-slate-800 text-slate-200 font-bold rounded-lg px-6 h-9 shadow-xl shadow-black/40 transition-all border border-white/5 text-[10px]">
-                   Browse Assignments
-                </Button>
-            </div>
+        <div className="absolute top-0 right-0 p-8 opacity-10">
+          <LayoutDashboard className="h-40 w-40 text-purple-400 rotate-12" />
+        </div>
+        
+        <div className="relative z-10 space-y-4 text-center md:text-left">
+          <div className="inline-flex items-center gap-2 rounded-full bg-purple-500/10 px-4 py-1.5 border border-purple-500/20 backdrop-blur-md">
+            <Sparkles className="h-4 w-4 text-purple-400" />
+            <span className="text-[10px] font-black text-purple-200 uppercase tracking-widest">Student Portal</span>
           </div>
-
-          {/* Premium Floating Elements */}
-          <div className="hidden lg:flex relative h-24 w-32 items-center justify-center">
-             <motion.div
-                animate={{ y: [0, -15, 0], rotate: [0, 10, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="p-4 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-2xl relative z-10"
-             >
-                <Trophy className="h-10 w-10 text-amber-400/80" />
-             </motion.div>
-             <div className="absolute inset-0 bg-indigo-500/10 blur-[80px] rounded-full" />
+          <h1 className="text-2xl md:text-5xl font-black text-white uppercase tracking-tight leading-none">
+            Welcome back, <br className="md:hidden" />
+            <span className="bg-gradient-to-r from-purple-400 to-indigo-300 bg-clip-text text-transparent">
+              {user ? user.name.split(' ')[0] : "Student"}!
+            </span>
+          </h1>
+          <p className="max-w-md text-xs md:text-sm text-slate-400 font-medium leading-relaxed mx-auto md:mx-0">
+            You have <span className="text-white font-bold">{stats.total} total assignments</span> available to complete. Keep pushing your limits!
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 pt-2 justify-center md:justify-start">
+             <Link href="/student/assignments">
+                <Button className="w-full sm:w-auto h-12 rounded-xl px-8 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-purple-500/10">
+                   View Assignments <ArrowUpRight className="ml-2 h-4 w-4" />
+                </Button>
+             </Link>
           </div>
         </div>
-        <div className="absolute -left-10 -bottom-10 h-64 w-64 rounded-full bg-indigo-600/5 blur-[100px]" />
       </motion.div>
 
-      {/* Stats Grid */}
-      <motion.div variants={container} initial="hidden" animate="show" className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <motion.div variants={item} key={stat.title}>
-              <Card className="group relative overflow-hidden border-none bg-slate-950/40 backdrop-blur-xl border border-white/5 transition-all hover:bg-slate-900/40">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className={`rounded-lg ${stat.color} p-2 text-white border border-white/5 group-hover:scale-110 transition-transform duration-500`}>
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <span className="text-[8px] font-bold uppercase tracking-widest text-slate-600">{stat.trend}</span>
-                  </div>
-                  <div className="space-y-0.5">
-                    <h3 className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{stat.title}</h3>
-                    <div className="text-xl font-bold text-slate-200 tracking-tight">{stat.value}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          );
-        })}
-      </motion.div>
-
-      {/* Main Sections */}
+      {/* Stats Cards */}
       <motion.div 
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
-        className="grid gap-4 grid-cols-1 lg:grid-cols-3 h-[180px]"
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 shrink-0"
       >
-        <Card className="lg:col-span-2 overflow-hidden border-none bg-slate-950/20 backdrop-blur-md flex flex-col items-center justify-center border border-white/5 border-dashed p-4">
-             <BookOpen className="h-8 w-8 text-slate-800 mb-2" />
-             <p className="text-slate-400 font-bold text-sm tracking-tight">Active Assignments</p>
-             <p className="text-slate-600 text-[10px] text-center max-w-xs mt-1 leading-relaxed">
-               No active tasks right now.
-             </p>
-        </Card>
-        
-        <Card className="overflow-hidden border-none bg-slate-950/20 backdrop-blur-md p-4 border border-white/5">
-            <h3 className="font-bold text-slate-300 mb-3 flex items-center gap-2 text-[11px] tracking-tight">
-                <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
-                Latest Submissions
-            </h3>
-            <div className="space-y-3">
-                {statsData?.submissionStats?.length ? statsData.submissionStats.slice(0, 3).map((s: any) => (
-                    <div key={s._id} className="flex gap-4 items-center justify-between border-b border-white/5 pb-2 last:border-0 last:pb-0">
-                        <div className="flex items-center gap-2">
-                           <div className={`h-2 w-2 rounded-full ${s._id === 'approved' ? 'bg-green-500' : s._id === 'pending' ? 'bg-yellow-500' : 'bg-red-500'}`} />
-                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{s._id}</p>
-                        </div>
-                        <p className="text-sm font-extrabold text-white">{s.count}</p>
-                    </div>
-                )) : (
-                  <p className="text-slate-600 text-[10px] text-center py-10 font-medium italic">No submissions yet.</p>
-                )}
+        {[
+          { title: "Total Tasks", value: stats.total, icon: BookOpen, color: "bg-blue-500/10 text-blue-400" },
+          { title: "Completed", value: stats.completed, icon: CheckCircle2, color: "bg-green-500/10 text-green-400" },
+          { title: "Pending", value: stats.total - stats.completed, icon: Timer, color: "bg-orange-500/10 text-orange-400" }
+        ].map((stat, i) => (
+          <motion.div key={i} variants={item}>
+            <Card className="bg-slate-950/40 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-3xl hover:bg-white/5 transition-all group shadow-xl">
+              <CardContent className="p-4 md:p-6 flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{stat.title}</p>
+                  <p className="text-2xl md:text-3xl font-black text-white">{stat.value}</p>
+                </div>
+                <div className={`h-12 w-12 rounded-xl ${stat.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                  <stat.icon className="h-6 w-6" />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      {/* Bottom Activity Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="flex-1 min-h-0 pb-10 md:pb-0"
+      >
+        <Card className="h-full bg-slate-950/20 backdrop-blur-md border border-white/10 border-dashed rounded-[2rem] flex flex-col items-center justify-center p-8 text-center">
+            <div className="h-16 w-16 rounded-3xl bg-white/5 flex items-center justify-center mb-6">
+                <Clock className="h-8 w-8 text-slate-700" />
             </div>
+            <h3 className="text-xl font-black text-slate-300 uppercase tracking-tight">Recent Activity</h3>
+            <p className="text-slate-600 text-xs mt-2 max-w-sm font-medium leading-relaxed">
+                Your recent assignment submissions and progress will be tracked here. Start your first assignment to see updates!
+            </p>
         </Card>
       </motion.div>
     </div>
