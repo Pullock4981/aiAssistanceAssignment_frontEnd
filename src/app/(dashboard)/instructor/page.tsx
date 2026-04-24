@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
 import { toast, Toaster } from "sonner";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 const container = {
   hidden: { opacity: 0 },
@@ -67,6 +68,28 @@ export default function InstructorDashboard() {
     { title: "Pending", value: pendingSubmissions, icon: Clock, color: "bg-slate-800/40", trend: "ATTN" },
   ];
 
+  // Prepare Chart Data
+  const COLORS: Record<string, string> = {
+    accepted: '#22c55e', 
+    pending: '#eab308',  
+    'needs-improvement': '#f97316', 
+    beginner: '#2dd4bf', 
+    intermediate: '#a855f7', 
+    advanced: '#ef4444' 
+  };
+
+  const pieData = statsData?.submissionStats?.map((s: any) => ({
+    name: s._id === 'accepted' ? 'Accepted' : s._id === 'pending' ? 'Pending' : 'Needs Improvement',
+    value: s.count,
+    color: COLORS[s._id] || '#8884d8'
+  })) || [];
+
+  const barData = statsData?.difficultyStats?.map((d: any) => ({
+    name: d._id.charAt(0).toUpperCase() + d._id.slice(1),
+    Assignments: d.count,
+    fill: COLORS[d._id] || '#8884d8'
+  })) || [];
+
   if (isLoading) {
     return (
       <div className="space-y-4 md:space-y-4 pb-4 animate-pulse">
@@ -99,21 +122,21 @@ export default function InstructorDashboard() {
         animate={{ opacity: 1, y: 0 }}
         className="relative overflow-hidden rounded-2xl md:rounded-[2rem] bg-gradient-to-br from-slate-950 via-purple-950/40 to-slate-900 p-5 md:p-8 text-white shadow-2xl border border-white/5 shrink-0"
       >
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-2 md:space-y-3 text-center md:text-left">
+        <div className="relative z-10 flex flex-col-reverse md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-2 md:space-y-3 text-center md:text-left md:w-1/2 mt-4 md:mt-0 z-10">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-[8px] md:text-[10px] font-medium backdrop-blur-md border border-white/10 mx-auto md:mx-0">
               <Sparkles className="h-3 w-3 md:h-4 md:w-4 text-purple-500" />
               <span className="text-slate-400 font-bold uppercase tracking-widest">Instructor Overview</span>
             </div>
-            <h1 className="text-xl md:text-3xl font-black tracking-tight leading-tight text-white uppercase">
+            <h1 className="text-xl md:text-3xl font-black tracking-tight leading-tight text-white uppercase relative z-10">
               Welcome, <span className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
                 {user ? `${user.name.split(' ')[0]}!` : "Professor!"}
               </span>
             </h1>
-            <p className="max-w-md text-[10px] md:text-xs text-slate-500 leading-relaxed font-medium mx-auto md:mx-0">
+            <p className="max-w-md text-[10px] md:text-xs text-slate-500 leading-relaxed font-medium mx-auto md:mx-0 relative z-10">
               You have <span className="font-bold text-white/80">{pendingSubmissions} submissions</span> to review today.
             </p>
-            <div className="flex justify-center md:justify-start pt-1">
+            <div className="flex justify-center md:justify-start pt-1 relative z-10">
                 <Link href="/instructor/assignments/create" className="w-full md:w-auto">
                     <Button 
                       className="cursor-pointer w-full md:w-auto font-black rounded-xl px-8 h-10 text-[9px] md:text-[10px] uppercase tracking-widest"
@@ -124,18 +147,63 @@ export default function InstructorDashboard() {
             </div>
           </div>
 
-          <div className="hidden md:flex relative h-20 md:h-24 w-32 md:w-40 items-center justify-center overflow-hidden">
-             <div className="flex items-end gap-1.5 md:gap-2 h-12 md:h-16">
-                {(statsData?.difficultyStats?.length ? statsData.difficultyStats : [{count: 4}, {count: 7}, {count: 5}]).map((stat: any, i: number) => (
-                    <motion.div
-                        key={i}
-                        initial={{ height: 0 }}
-                        animate={{ height: `${Math.min(stat.count * 12 || 40, 100)}%` }}
-                        transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse", delay: i * 0.2 }}
-                        className="w-2.5 md:w-3 rounded-t-md bg-purple-500/40 shadow-[0_0_20px_rgba(168,85,247,0.2)]"
-                    />
-                ))}
-             </div>
+          {/* HIGH-END PREMIUM ANIMATION */}
+          <div className="relative h-32 sm:h-40 w-full md:h-full md:w-64 lg:w-80 flex items-center justify-center md:justify-end pointer-events-none z-0 mt-2 md:mt-0">
+             {/* Core Glowing Orb */}
+             <motion.div 
+                animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }} 
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute m-auto h-24 w-24 sm:h-32 sm:w-32 md:h-48 md:w-48 rounded-full bg-fuchsia-600/30 blur-[40px] md:blur-[50px]"
+             />
+
+             {/* Orbital Ring 1 */}
+             <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                className="absolute m-auto h-32 w-32 sm:h-40 sm:w-40 lg:h-48 lg:w-48 rounded-full border border-white/[0.03] border-t-purple-400/30 border-l-purple-400/10"
+             />
+
+             {/* Orbital Ring 2 */}
+             <motion.div
+                animate={{ rotate: -360 }}
+                transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                className="absolute m-auto h-20 w-20 sm:h-28 sm:w-28 lg:h-32 lg:w-32 rounded-full border border-white/[0.03] border-b-fuchsia-400/30 border-r-fuchsia-400/10"
+             />
+
+             {/* Floating Premium Card 1 */}
+             <motion.div 
+                animate={{ y: [-6, 6, -6], rotateZ: [-2, 2, -2] }} 
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute right-0 sm:right-4 lg:right-4 top-0 sm:top-4 lg:top-4 flex items-center gap-2 md:gap-3 rounded-xl md:rounded-2xl border border-white/10 bg-white/[0.03] px-2.5 py-1.5 md:px-3 md:py-2.5 lg:px-4 lg:py-3 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] shadow-purple-500/20"
+             >
+                <div className="flex h-5 w-5 md:h-7 md:w-7 lg:h-9 lg:w-9 items-center justify-center rounded-lg md:rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 border border-white/10 shadow-inner">
+                  <GraduationCap className="h-2.5 w-2.5 md:h-3.5 md:w-3.5 lg:h-4 lg:w-4 text-fuchsia-300" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[7px] md:text-[9px] lg:text-[10px] font-black uppercase tracking-widest bg-gradient-to-r from-fuchsia-200 to-purple-200 bg-clip-text text-transparent">Teaching Hub</span>
+                  <span className="text-[6px] md:text-[7px] lg:text-[8px] font-bold text-slate-400 uppercase tracking-widest">Live Sync</span>
+                </div>
+             </motion.div>
+
+             {/* Floating Premium Card 2 */}
+             <motion.div 
+                animate={{ y: [6, -6, 6], rotateZ: [2, -2, 2] }} 
+                transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute left-0 sm:left-4 md:-left-6 lg:left-0 bottom-0 sm:bottom-4 lg:bottom-6 flex items-center gap-2 md:gap-3 rounded-xl md:rounded-2xl border border-white/10 bg-black/40 px-2.5 py-1.5 md:px-3 md:py-2.5 lg:px-4 lg:py-3 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] shadow-indigo-500/20"
+             >
+                <div className="flex h-5 w-5 md:h-7 md:w-7 lg:h-9 lg:w-9 items-center justify-center rounded-lg md:rounded-xl bg-gradient-to-br from-indigo-500/20 to-blue-500/20 border border-white/10 shadow-inner">
+                  <BookOpen className="h-2.5 w-2.5 md:h-3.5 md:w-3.5 lg:h-4 lg:w-4 text-indigo-300" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[7px] md:text-[9px] lg:text-[10px] font-black uppercase tracking-widest bg-gradient-to-r from-indigo-200 to-blue-200 bg-clip-text text-transparent">Curriculum</span>
+                  <span className="text-[6px] md:text-[7px] lg:text-[8px] font-bold text-slate-400 uppercase tracking-widest">Active</span>
+                </div>
+             </motion.div>
+
+             {/* Tiny glowing particles */}
+             <motion.div animate={{ y: [-20, 20], opacity: [0, 1, 0] }} transition={{ duration: 4, repeat: Infinity }} className="absolute top-8 right-16 h-1.5 w-1.5 rounded-full bg-purple-400 blur-[1px]" />
+             <motion.div animate={{ y: [20, -20], opacity: [0, 1, 0] }} transition={{ duration: 5, repeat: Infinity, delay: 1 }} className="absolute bottom-8 left-16 h-2 w-2 rounded-full bg-fuchsia-400 blur-[1px]" />
+             <motion.div animate={{ scale: [1, 2, 1], opacity: [0, 0.8, 0] }} transition={{ duration: 3, repeat: Infinity, delay: 2 }} className="absolute top-1/2 left-1/2 md:left-auto md:right-32 h-1 w-1 rounded-full bg-white blur-[1px]" />
           </div>
         </div>
       </motion.div>
@@ -170,37 +238,96 @@ export default function InstructorDashboard() {
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
         className="grid gap-3 grid-cols-1 lg:grid-cols-3 flex-1 min-h-0 pb-10 md:pb-0"
       >
-        <Card className="lg:col-span-2 overflow-hidden bg-slate-950/20 backdrop-blur-md flex flex-col items-center justify-center border border-white/10 border-dashed p-6 text-center rounded-2xl md:rounded-[2rem]">
-             <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white/5 flex items-center justify-center mb-3 md:mb-4">
-                <BarChart3 className="h-5 w-5 md:h-6 md:w-6 text-purple-500" />
-             </div>
-             <h3 className="text-base md:text-lg font-black text-white tracking-tight mb-1">Performance Analytics</h3>
-             <p className="text-slate-500 text-[8px] md:text-[10px] max-w-sm leading-relaxed font-medium">
-               Detailed distribution and analytics data will appear here once students start submitting their assignments.
-             </p>
-        </Card>
-        
-        <Card className="overflow-hidden bg-slate-950/20 backdrop-blur-md p-5 md:p-6 border border-white/10 rounded-2xl md:rounded-[2rem] flex flex-col min-h-0">
-            <h3 className="font-black text-white mb-3 md:mb-4 flex items-center gap-2 md:gap-3 text-[10px] md:text-xs uppercase tracking-widest shrink-0">
-                <Clock className="h-3.5 w-3.5 md:h-4 md:w-4 text-purple-600" />
-                Status Overview
+        <Card className="lg:col-span-2 overflow-hidden bg-slate-950/40 backdrop-blur-md flex flex-col border border-white/10 p-5 md:p-6 rounded-2xl md:rounded-[2rem]">
+            <h3 className="font-black text-white mb-2 flex items-center gap-2 text-[10px] md:text-xs uppercase tracking-widest shrink-0">
+                <BarChart3 className="h-3.5 w-3.5 md:h-4 md:w-4 text-purple-600" />
+                Difficulty Distribution
             </h3>
-            <div className="space-y-2 md:space-y-3 flex-1 overflow-y-auto custom-scrollbar pr-2 min-h-0">
-                {statsData?.submissionStats?.length ? statsData.submissionStats.slice(0, 8).map((s: any) => (
-                    <div key={s._id} className="flex gap-3 items-center justify-between border-b border-white/5 pb-2 md:pb-3 last:border-0 last:pb-0">
-                        <div className="flex items-center gap-1.5 md:gap-2">
-                            <div className={`h-1.5 w-1.5 md:h-2 md:w-2 rounded-full ${s._id === 'approved' ? 'bg-green-500' : s._id === 'pending' ? 'bg-yellow-500' : 'bg-red-500'} shadow-[0_0_10px_rgba(34,197,94,0.3)]`} />
-                            <p className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">{s._id}</p>
-                        </div>
-                        <p className="text-sm md:text-base font-black text-white">{s.count}</p>
+            <p className="text-slate-500 text-[9px] md:text-[10px] font-medium mb-4">
+                Analyze how many assignments you've created per difficulty level.
+            </p>
+            <div className="h-[200px] sm:h-[250px] w-full md:flex-1 md:min-h-[200px]">
+                {barData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                            <XAxis dataKey="name" stroke="#ffffff50" fontSize={10} tickLine={false} axisLine={false} />
+                            <YAxis stroke="#ffffff50" fontSize={10} tickLine={false} axisLine={false} allowDecimals={false} />
+                            <RechartsTooltip 
+                                cursor={{ fill: '#ffffff05' }}
+                                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#ffffff10', borderRadius: '12px', fontSize: '12px', color: '#fff' }}
+                            />
+                            <Bar dataKey="Assignments" radius={[4, 4, 0, 0]}>
+                                {barData.map((entry: any, index: number) => (
+                                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
+                ) : (
+                    <div className="h-full flex flex-col items-center justify-center gap-2 opacity-50">
+                        <BarChart3 className="h-8 w-8 text-slate-600" />
+                        <span className="text-xs text-slate-500 font-medium">No data available</span>
                     </div>
-                )) : (
-                  <div className="flex flex-col items-center justify-center h-full gap-3 py-4 md:py-6">
-                     <Users className="h-6 w-6 md:h-8 md:w-8 text-slate-800" />
-                     <p className="text-slate-600 text-[8px] md:text-[10px] font-bold italic tracking-wide">No activity found</p>
-                  </div>
                 )}
             </div>
+        </Card>
+        
+        <Card className="overflow-hidden bg-slate-950/40 backdrop-blur-md p-5 md:p-6 border border-white/10 rounded-2xl md:rounded-[2rem] flex flex-col min-h-0">
+            <h3 className="font-black text-white mb-2 flex items-center gap-2 text-[10px] md:text-xs uppercase tracking-widest shrink-0">
+                <Clock className="h-3.5 w-3.5 md:h-4 md:w-4 text-purple-600" />
+                Submission Rates
+            </h3>
+            <p className="text-slate-500 text-[9px] md:text-[10px] font-medium mb-4">
+                Overall status of student submissions.
+            </p>
+            <div className="h-[200px] sm:h-[250px] w-full relative flex items-center justify-center md:flex-1 md:min-h-[200px]">
+                {pieData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                            <Pie
+                                data={pieData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius="60%"
+                                outerRadius="80%"
+                                paddingAngle={5}
+                                dataKey="value"
+                                stroke="none"
+                            >
+                                {pieData.map((entry: any, index: number) => (
+                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                            </Pie>
+                            <RechartsTooltip 
+                                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#ffffff10', borderRadius: '12px', fontSize: '12px', color: '#fff' }}
+                                itemStyle={{ color: '#fff' }}
+                            />
+                        </PieChart>
+                    </ResponsiveContainer>
+                ) : (
+                    <div className="h-full flex flex-col items-center justify-center gap-2 opacity-50">
+                        <PieChart className="h-8 w-8 text-slate-600" />
+                        <span className="text-xs text-slate-500 font-medium">No submissions yet</span>
+                    </div>
+                )}
+                {pieData.length > 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none flex-col">
+                        <span className="text-2xl font-black text-white">{totalSubmissions}</span>
+                        <span className="text-[8px] uppercase tracking-widest text-slate-500 font-bold">Total</span>
+                    </div>
+                )}
+            </div>
+            {pieData.length > 0 && (
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                    {pieData.map((entry: any, index: number) => (
+                        <div key={index} className="flex items-center gap-1.5">
+                            <div className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                            <span className="text-[9px] font-bold text-slate-400 uppercase">{entry.name}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
         </Card>
       </motion.div>
     </div>

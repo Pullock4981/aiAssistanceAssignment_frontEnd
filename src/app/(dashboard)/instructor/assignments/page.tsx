@@ -23,6 +23,7 @@ import Swal from "sweetalert2";
 export default function InstructorAssignments() {
   const router = useRouter();
   const [assignments, setAssignments] = useState<any[]>([]);
+  const [submissionsCounts, setSubmissionsCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [mounted, setMounted] = useState(false);
@@ -52,6 +53,23 @@ export default function InstructorAssignments() {
             (a: any) => a.createdBy?._id === userData._id || a.createdBy === userData._id
           );
           setAssignments(myAssignments);
+        }
+
+        // Fetch submissions to get counts
+        try {
+          const subResponse = await axios.get(`${apiUrl}/submissions`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (subResponse.data.success) {
+            const counts: Record<string, number> = {};
+            subResponse.data.data.forEach((sub: any) => {
+              const aid = sub.assignment?._id || sub.assignment;
+              if (aid) counts[aid] = (counts[aid] || 0) + 1;
+            });
+            setSubmissionsCounts(counts);
+          }
+        } catch (e) {
+          console.error("Failed to load submission counts");
         }
       } catch (error: any) {
         toast.error("Failed to load assignments");
@@ -142,7 +160,7 @@ export default function InstructorAssignments() {
           </div>
           
           <Link href="/instructor/assignments/create" className="w-full sm:w-auto">
-            <Button className="w-full h-12 md:h-14 rounded-xl md:rounded-2xl px-8 font-black text-[10px] md:text-xs uppercase tracking-[0.2em] shadow-2xl group transition-all active:scale-95">
+            <Button className="cursor-pointer w-full h-12 md:h-14 rounded-xl md:rounded-2xl px-8 font-black text-[10px] md:text-xs uppercase tracking-[0.2em] shadow-2xl group transition-all active:scale-95">
                <Plus className="mr-2 h-4 w-4 md:h-5 md:w-5 group-hover:rotate-90 transition-transform" /> Create New
             </Button>
           </Link>
@@ -212,18 +230,19 @@ export default function InstructorAssignments() {
                         <Users className="h-3.5 w-3.5 text-slate-600" />
                         <div className="space-y-0.5 text-right">
                            <p className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">Submissions</p>
-                           <p className="text-[10px] font-black text-slate-400 uppercase">0/0</p>
+                           <p className="text-[10px] font-black text-slate-400 uppercase">
+                             {submissionsCounts[assignment._id] || 0} Total
+                           </p>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white/[0.02] border-t border-white/5 p-4 flex items-center justify-between gap-3 shrink-0">
-                    <div className="flex items-center gap-2">
+                  <div className="bg-white/[0.02] border-t border-white/5 p-3 md:p-4 flex items-center justify-start gap-2 shrink-0">
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-9 w-9 rounded-xl hover:bg-white/5 text-slate-500 hover:text-white transition-all border border-transparent hover:border-white/10" 
+                        className="cursor-pointer h-9 w-9 rounded-xl hover:bg-white/5 text-slate-500 hover:text-white transition-all border border-transparent hover:border-white/10" 
                         onClick={() => router.push(`/instructor/assignments/edit/${assignment._id}`)}
                       >
                         <Edit2 className="h-4 w-4" />
@@ -231,16 +250,11 @@ export default function InstructorAssignments() {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-9 w-9 rounded-xl hover:bg-red-500/10 text-slate-500 hover:text-red-500 transition-all border border-transparent hover:border-red-500/10" 
+                        className="cursor-pointer h-9 w-9 rounded-xl hover:bg-red-500/10 text-slate-500 hover:text-red-500 transition-all border border-transparent hover:border-red-500/10" 
                         onClick={() => handleDelete(assignment._id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
-                    </div>
-                    
-                    <Button variant="outline" className="h-9 px-4 text-[9px] font-black uppercase tracking-widest border-white/10 hover:bg-purple-600 hover:border-purple-600 transition-all rounded-xl shadow-lg">
-                      Review <Eye className="ml-2 h-3.5 w-3.5" />
-                    </Button>
                   </div>
                 </CardContent>
               </Card>
