@@ -1,3 +1,4 @@
+// Force re-compile to fix any stale route issues
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -152,6 +153,14 @@ export default function StudentSubmissions() {
                     </div>
                   )}
                 </CardContent>
+                <div className="p-2 border-t border-white/5 bg-white/[0.02]">
+                  <Button 
+                    onClick={() => router.push(`/student/assignments/${sub.assignment?._id}`)}
+                    className="w-full h-12 rounded-xl md:rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:bg-purple-600 group/btn cursor-pointer"
+                  >
+                    View Submission <ExternalLink className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
+                  </Button>
+                </div>
               </Card>
             ))}
           </div>

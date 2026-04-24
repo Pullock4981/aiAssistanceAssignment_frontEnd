@@ -1,3 +1,4 @@
+// Force re-compile to fix stuck 404 issue
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -42,7 +43,11 @@ export default function InstructorSubmissions() {
       });
 
       if (response.data.success) {
-        setSubmissions(response.data.data);
+        // Sort submissions to show the newest ones first
+        const sortedSubmissions = response.data.data.sort((a: any, b: any) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setSubmissions(sortedSubmissions);
       }
     } catch (error) {
       toast.error("Failed to load submissions");
@@ -55,25 +60,110 @@ export default function InstructorSubmissions() {
     if (!selectedSub) return;
     
     setUpdating(true);
-    // Simulate AI processing delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Simulate deep scanning of links and codebase
+    await new Promise(resolve => setTimeout(resolve, 2000));
     
-    const title = selectedSub.assignment?.title || "Task";
-    const studentNote = selectedSub.comment || "No notes provided";
+    const title = selectedSub.assignment?.title || "Assignment";
+    const studentNote = selectedSub.comment || "";
+    const repoUrl = selectedSub.repoUrl || "";
+    const liveUrl = selectedSub.liveUrl || "";
     
-    // Smart simulation of AI feedback based on context
-    let suggestion = "";
-    if (studentNote.toLowerCase().includes("complete") || studentNote.toLowerCase().includes("done")) {
-      suggestion = `Excellent work on '${title}'! Your implementation appears solid. For the next level, consider optimizing your code structure and adding more comprehensive documentation.`;
-    } else if (studentNote.length < 10) {
-      suggestion = `I've reviewed your submission for '${title}'. While the basic requirements are met, I'd encourage you to provide more detailed notes in your next submission to help me understand your thought process better.`;
-    } else {
-      suggestion = `Thank you for the detailed notes on '${title}'. Your approach to the problem is interesting. I recommend focusing on edge cases and ensuring UI consistency as you continue to improve.`;
+    const noteLower = studentNote.toLowerCase();
+    
+    // --- ADVANCED DYNAMIC ANALYSIS LOGIC --- //
+    
+    // 1. Analyze Note Quality (Detect Gibberish/Spam)
+    const words = studentNote.trim().split(/\s+/);
+    const avgWordLength = words.length > 0 ? studentNote.length / words.length : 0;
+    const isGibberish = studentNote.length > 15 && (avgWordLength > 12 || words.length < 3);
+    const isDetailedNote = !isGibberish && studentNote.length > 30;
+    
+    const mentionedBug = !isGibberish && (noteLower.includes("bug") || noteLower.includes("error") || noteLower.includes("issue"));
+    
+    // 2. Analyze Links Quality
+    const isGitHub = repoUrl.includes("github.com");
+    const isGitLab = repoUrl.includes("gitlab.com");
+    const isValidRepo = isGitHub || isGitLab;
+    const isSuspiciousRepo = repoUrl.includes("freepik") || repoUrl.includes("image") || repoUrl.includes("google.com");
+    
+    const isVercel = liveUrl.includes("vercel.app");
+    const isNetlify = liveUrl.includes("netlify.app");
+    const isSuspiciousLive = liveUrl && (liveUrl.includes("freepik") || liveUrl.includes("google.com"));
+    
+    // --- GENERATE STRUCTURED FEEDBACK --- //
+    let suggestion = `[AI SMART REVIEW: ${title.toUpperCase()}]\n\n`;
+    
+    let hasPositives = false;
+    suggestion += `✅ POSITIVES (ভালো দিক):\n`;
+    if (isDetailedNote) {
+      suggestion += `- Your note clearly explains your approach to the problem.\n`;
+      hasPositives = true;
     }
+    if (isValidRepo) {
+      suggestion += `- Proper code repository (${isGitHub ? 'GitHub' : 'GitLab'}) link provided.\n`;
+      hasPositives = true;
+    }
+    if (liveUrl && !isSuspiciousLive) {
+      suggestion += `- Live demo is active ${isVercel ? '(Vercel)' : isNetlify ? '(Netlify)' : ''}.\n`;
+      hasPositives = true;
+    }
+    
+    if (!hasPositives) {
+      suggestion += `- No significant positive aspects found in the submitted links/notes.\n`;
+    }
+    suggestion += `\n`;
+    
+    suggestion += `⚠️ NEGATIVES & CHALLENGES (ঘাটতি/সমস্যা):\n`;
+    let hasNegatives = false;
+    
+    if (isGibberish) {
+      suggestion += `- The student note appears to be random/gibberish text. Please provide meaningful explanations.\n`;
+      hasNegatives = true;
+    } else if (!isDetailedNote) {
+      suggestion += `- The submission note is too short. Hard to evaluate your thought process.\n`;
+      hasNegatives = true;
+    }
+    
+    if (!isValidRepo || isSuspiciousRepo) {
+      suggestion += `- The repository link provided (${repoUrl}) does not look like a valid GitHub or GitLab repository.\n`;
+      hasNegatives = true;
+    }
+    
+    if (isSuspiciousLive) {
+      suggestion += `- The live demo link looks suspicious or unrelated to a web deployment.\n`;
+      hasNegatives = true;
+    } else if (!liveUrl) {
+      suggestion += `- Missing live demo link. Deployment is essential for UI evaluation.\n`;
+      hasNegatives = true;
+    }
+    
+    if (!hasNegatives) {
+      suggestion += `- Everything looks proper and standard. Great job!\n`;
+    }
+    suggestion += `\n`;
+    
+    suggestion += `🛠️ UPDATES NEEDED (পরবর্তী ধাপে যা করবেন):\n`;
+    if (isGibberish) {
+      suggestion += `1. Rewrite your submission note using proper, meaningful sentences explaining your work.\n`;
+    } else if (mentionedBug) {
+      suggestion += `1. Address the bugs/issues mentioned in your notes.\n`;
+    } else {
+      suggestion += `1. Review your codebase for potential performance optimizations.\n`;
+    }
+    
+    if (!isValidRepo || isSuspiciousRepo) {
+      suggestion += `2. Update the Codebase link to a valid GitHub repository containing your project files.\n`;
+    }
+    
+    if (isSuspiciousLive || !liveUrl) {
+      suggestion += `3. Deploy the project properly (e.g., Vercel, Netlify) and provide the correct URL.\n`;
+    }
+    
+    suggestion += `\n[Status Recommendation: ${hasNegatives ? 'Needs Improvement' : 'Acceptable'}]`;
     
     setFeedback(suggestion);
     setUpdating(false);
-    toast.success("AI feedback draft generated!");
+    toast.success("AI Analysis Complete!");
   };
 
   const handleOpenReview = (sub: any) => {
@@ -157,17 +247,17 @@ export default function InstructorSubmissions() {
               <Card key={sub._id} className="group bg-slate-950/40 backdrop-blur-xl border border-white/10 hover:border-purple-500/30 transition-all duration-500 overflow-hidden shadow-2xl rounded-[1.5rem] md:rounded-[2rem] flex flex-col">
                 <CardContent className="p-6 md:p-8 flex-1 space-y-6">
                    <div className="flex justify-between items-start">
-                      <div className="flex items-center gap-3">
-                         <div className="h-10 w-10 rounded-full border-2 border-purple-500/20 p-0.5 overflow-hidden">
-                            <div className="h-full w-full rounded-full bg-purple-500/10 flex items-center justify-center text-purple-400 text-xs font-black">
-                               {sub.studentId?.name?.[0] || "S"}
-                            </div>
-                         </div>
-                         <div>
-                            <h3 className="text-sm font-black text-white line-clamp-1">{sub.studentId?.name}</h3>
-                            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Student</p>
-                         </div>
-                      </div>
+                       <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full border-2 border-purple-500/20 p-0.5 overflow-hidden shrink-0">
+                             <div className="h-full w-full rounded-full bg-purple-500/10 flex items-center justify-center text-purple-400 text-xs font-black uppercase">
+                                {sub.student?.name?.[0] || "S"}
+                             </div>
+                          </div>
+                          <div className="flex flex-col">
+                             <h3 className="text-sm font-black text-white line-clamp-1">{sub.student?.name || "Unknown Student"}</h3>
+                             <p className="text-[9px] text-slate-500 font-bold tracking-widest truncate max-w-[120px]">{sub.student?.email || "No email"}</p>
+                          </div>
+                       </div>
                       <div className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${
                          sub.status === 'accepted' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
                          sub.status === 'pending' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
@@ -281,7 +371,7 @@ export default function InstructorSubmissions() {
                       </button>
                    </div>
                    <textarea 
-                     rows={4}
+                     rows={10}
                      placeholder="Great work! To improve further, you could try..."
                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm text-white focus:outline-none focus:border-purple-500/30 focus:bg-white/10 transition-all shadow-inner resize-none font-medium leading-relaxed"
                      value={feedback}

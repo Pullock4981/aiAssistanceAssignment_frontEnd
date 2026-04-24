@@ -138,7 +138,7 @@ export default function StudentAssignments() {
                 <div className="p-2 border-t border-white/5 bg-white/[0.02]">
                   <Button 
                     onClick={() => router.push(`/student/assignments/${assignment._id}`)}
-                    className="w-full h-12 rounded-xl md:rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:bg-purple-600 group/btn"
+                    className="w-full h-12 rounded-xl md:rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:bg-purple-600 group/btn cursor-pointer"
                   >
                     View Details <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
                   </Button>
