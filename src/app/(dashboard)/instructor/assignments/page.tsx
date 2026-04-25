@@ -50,10 +50,7 @@ export default function InstructorAssignments() {
         });
 
         if (response.data.success) {
-          const myAssignments = response.data.data.filter(
-            (a: any) => a.createdBy?._id === userData._id || a.createdBy === userData._id
-          );
-          setAssignments(myAssignments);
+          setAssignments(response.data.data);
         }
 
         // Fetch submissions to get counts
@@ -145,8 +142,8 @@ export default function InstructorAssignments() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-4 pt-2 md:pt-4 shrink-0">
         <div className="space-y-1 md:space-y-1.5 text-center md:text-left">
-          <h1 className="text-xl md:text-3xl font-black tracking-tight text-white uppercase leading-none">My Assignments</h1>
-          <p className="text-[9px] md:text-xs text-slate-500 font-bold uppercase tracking-[0.2em]">Manage your active tasks</p>
+          <h1 className="text-xl md:text-3xl font-black tracking-tight text-white uppercase leading-none">All Assignments</h1>
+          <p className="text-[9px] md:text-xs text-slate-500 font-bold uppercase tracking-[0.2em]">Manage the entire task library</p>
         </div>
         
         <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4">

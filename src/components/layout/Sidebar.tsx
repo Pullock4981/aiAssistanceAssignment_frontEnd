@@ -30,7 +30,7 @@ const Sidebar = ({ role = "instructor", onClose }: { role?: "instructor" | "stud
 
   const navItems = role === "instructor" ? [
     { name: "Dashboard", href: "/instructor", icon: LayoutDashboard },
-    { name: "My Assignments", href: "/instructor/assignments", icon: BookOpen },
+    { name: "All Assignments", href: "/instructor/assignments", icon: BookOpen },
     { name: "Submissions", href: "/instructor/submissions", icon: FileText },
     { name: "Analytics", href: "/instructor/analytics", icon: BarChart3 },
   ] : [
