@@ -2,11 +2,15 @@
 
 This is the frontend component of the **AIMS** (AI-Powered Assignment Management System). It provides a high-performance, visually stunning interface for both instructors and students.
 
+**Live Demo:** [https://ai-assistance-assignment-front-end.vercel.app/](https://ai-assistance-assignment-front-end.vercel.app/)
+
 ## 🚀 Top-Tier Features
 
 ### 💎 Design System
 - **Glassmorphism Aesthetic:** Modern, semi-transparent layouts with high-end blur effects.
 - **Dynamic Animations:** Powered by `framer-motion` for smooth page transitions and interactive elements.
+- **Themed UI Polish:** Custom scrollbars and pointer cursors designed to integrate seamlessly with the dark theme.
+- **Seamless Auth UX:** "Show Password" toggles and automatic dashboard redirect upon successful registration.
 - **Dark Mode Optimized:** A curated dark theme designed for long-term productivity and focus.
 
 ### 🔍 Advanced Search & Filter
@@ -41,7 +45,7 @@ This is the frontend component of the **AIMS** (AI-Powered Assignment Management
 2. **Configure Environment:**
    Create `.env.local` and add:
    ```env
-   NEXT_PUBLIC_API_URL=http://localhost:5000/api
+   NEXT_PUBLIC_API_URL=https://ai-assiagment-assistance-backend.vercel.app/api
    ```
 
 3. **Run Dev Server:**
