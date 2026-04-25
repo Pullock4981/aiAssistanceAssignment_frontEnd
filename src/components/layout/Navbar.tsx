@@ -90,6 +90,23 @@ export default function Navbar({ role, onMenuClick }: { role?: string, onMenuCli
     } catch {}
   };
 
+  const handleNotifClick = async (notif: any) => {
+    if (!notif.isRead) {
+      await markOneRead(notif._id);
+    }
+    
+    setIsNotifOpen(false);
+
+    // Dynamic Navigation based on type
+    if (notif.type === "new_submission") {
+      router.push("/instructor/submissions");
+    } else if (notif.type === "status_changed" || notif.type === "review_updated") {
+      router.push("/student/submissions");
+    } else if (notif.type === "new_assignment") {
+      router.push("/student/assignments");
+    }
+  };
+
   const handleSignOut = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -163,10 +180,16 @@ export default function Navbar({ role, onMenuClick }: { role?: string, onMenuCli
                   ) : (
                     <div className="divide-y divide-white/5">
                       {notifications.map((notif) => (
-                        <div key={notif._id} onClick={() => !notif.isRead && markOneRead(notif._id)}
+                        <div key={notif._id} onClick={() => handleNotifClick(notif)}
                           className={`flex items-start gap-3 px-4 py-3 transition-colors cursor-pointer ${notif.isRead ? "opacity-50" : "hover:bg-white/5"}`}>
-                          <div className={`mt-0.5 h-8 w-8 rounded-xl flex items-center justify-center shrink-0 ${notif.type === "new_submission" ? "bg-purple-500/10 border border-purple-500/20" : "bg-green-500/10 border border-green-500/20"}`}>
-                            {notif.type === "new_submission" ? <BookOpen className="h-4 w-4 text-purple-400" /> : <CheckCircle2 className="h-4 w-4 text-green-400" />}
+                          <div className={`mt-0.5 h-8 w-8 rounded-xl flex items-center justify-center shrink-0 ${
+                            (notif.type === "new_submission" || notif.type === "new_assignment") 
+                              ? "bg-purple-500/10 border border-purple-500/20" 
+                              : "bg-green-500/10 border border-green-500/20"
+                          }`}>
+                            {(notif.type === "new_submission" || notif.type === "new_assignment") 
+                              ? <BookOpen className="h-4 w-4 text-purple-400" /> 
+                              : <CheckCircle2 className="h-4 w-4 text-green-400" />}
                           </div>
                           <div className="flex-1 min-w-0 py-0.5">
                             <p className={`text-[12px] leading-snug ${notif.isRead ? "text-slate-500" : "text-slate-100 font-medium"}`}>{notif.message}</p>
