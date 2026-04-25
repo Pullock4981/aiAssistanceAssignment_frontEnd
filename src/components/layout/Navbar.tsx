@@ -102,7 +102,7 @@ export default function Navbar({ role, onMenuClick }: { role?: string, onMenuCli
       router.push("/instructor/submissions");
     } else if (notif.type === "status_changed" || notif.type === "review_updated") {
       router.push("/student/submissions");
-    } else if (notif.type === "new_assignment") {
+    } else if (notif.type === "new_assignment" || notif.type === "assignment_updated") {
       router.push("/student/assignments");
     }
   };
