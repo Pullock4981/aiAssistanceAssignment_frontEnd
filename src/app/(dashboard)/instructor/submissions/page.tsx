@@ -318,7 +318,7 @@ export default function InstructorSubmissions() {
                       <Button 
                         onClick={() => handleOpenReview(sub)}
                         variant="outline" 
-                        className="h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest border-white/10 hover:bg-purple-600 hover:border-purple-600 transition-all shadow-lg"
+                        className="h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest border-white/10 hover:bg-purple-600 hover:border-purple-600 transition-all shadow-lg cursor-pointer"
                       >
                          Review Task
                       </Button>
@@ -356,13 +356,13 @@ export default function InstructorSubmissions() {
                          {selectedSub?.assignment?.title}
                       </h2>
                    </div>
-                   <button onClick={() => setIsModalOpen(false)} className="h-8 w-8 md:h-10 md:w-10 rounded-lg md:rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors shrink-0">
+                   <button onClick={() => setIsModalOpen(false)} className="h-8 w-8 md:h-10 md:w-10 rounded-lg md:rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors shrink-0 cursor-pointer">
                       <X className="h-4 w-4 md:h-5 md:w-5 text-slate-400" />
                    </button>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-6">
-                   <a href={selectedSub?.repoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 md:p-4 rounded-xl md:rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                   <a href={selectedSub?.repoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 md:p-4 rounded-xl md:rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all cursor-pointer">
                       <Globe className="h-4 w-4 md:h-5 md:w-5 text-slate-400" />
                       <div className="text-left">
                          <p className="text-[7px] md:text-[8px] font-black text-slate-600 uppercase tracking-widest">Codebase</p>
@@ -371,7 +371,7 @@ export default function InstructorSubmissions() {
                       <ExternalLink className="h-3 w-3 text-slate-600 ml-auto" />
                    </a>
                    {selectedSub?.liveUrl && (
-                      <a href={selectedSub?.liveUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 md:p-4 rounded-xl md:rounded-2xl bg-purple-500/10 border border-purple-500/10 hover:bg-purple-500/20 transition-all">
+                      <a href={selectedSub?.liveUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 md:p-4 rounded-xl md:rounded-2xl bg-purple-500/10 border border-purple-500/10 hover:bg-purple-500/20 transition-all cursor-pointer">
                          <Sparkles className="h-4 w-4 md:h-5 md:w-5 text-purple-400" />
                          <div className="text-left">
                             <p className="text-[7px] md:text-[8px] font-black text-purple-600 uppercase tracking-widest">Live Site</p>
@@ -399,7 +399,7 @@ export default function InstructorSubmissions() {
                         onClick={generateAIFeedback}
                         disabled={updating}
                         type="button"
-                        className="flex items-center gap-1.5 text-[8px] md:text-[9px] font-black text-purple-400 hover:text-purple-300 uppercase tracking-widest transition-colors w-fit"
+                        className="flex items-center gap-1.5 text-[8px] md:text-[9px] font-black text-purple-400 hover:text-purple-300 uppercase tracking-widest transition-colors w-fit cursor-pointer disabled:cursor-not-allowed"
                       >
                          <Sparkles className="h-3 w-3" /> Get AI Suggestion
                       </button>

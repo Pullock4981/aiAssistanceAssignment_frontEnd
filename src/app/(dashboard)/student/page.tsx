@@ -138,8 +138,8 @@ export default function StudentDashboard() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-2 justify-center md:justify-start relative z-10">
-                <Link href="/student/assignments">
-                  <Button className="w-full sm:w-auto h-10 md:h-11 rounded-xl px-6 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-purple-500/10">
+                <Link href="/student/assignments" className="cursor-pointer">
+                  <Button className="w-full sm:w-auto h-10 md:h-11 rounded-xl px-6 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-purple-500/10 cursor-pointer">
                      View Assignments <ArrowUpRight className="ml-2 h-4 w-4" />
                   </Button>
                </Link>
@@ -286,7 +286,7 @@ export default function StudentDashboard() {
                               {activity.status}
                            </div>
                            <Link href="/student/submissions">
-                               <Button variant="ghost" size="sm" className="h-7 text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-slate-300 hover:text-white hover:bg-white/10 rounded-lg">
+                               <Button variant="ghost" size="sm" className="h-7 text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-slate-300 hover:text-white hover:bg-white/10 rounded-lg cursor-pointer">
                                    View Details
                                </Button>
                            </Link>

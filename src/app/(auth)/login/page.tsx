@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { GraduationCap, ArrowLeft, Mail, Lock, Sparkles, Loader2 } from "lucide-react";
+import { GraduationCap, ArrowLeft, Mail, Lock, Sparkles, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import axios from "axios";
@@ -13,6 +13,7 @@ import { toast, Toaster } from "sonner";
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: ""
@@ -107,12 +108,19 @@ export default function LoginPage() {
                <Input 
                  required
                  name="password"
-                 type="password" 
+                 type={showPassword ? "text" : "password"} 
                  value={formData.password}
                  onChange={handleChange}
                  placeholder="••••••••" 
-                 className="bg-black/20 border-white/5 h-12 pl-12 rounded-xl focus-visible:ring-purple-500/50 transition-all focus:bg-black/40 text-white"
+                 className="bg-black/20 border-white/5 h-12 pl-12 pr-12 rounded-xl focus-visible:ring-purple-500/50 transition-all focus:bg-black/40 text-white"
                />
+               <button
+                 type="button"
+                 onClick={() => setShowPassword(!showPassword)}
+                 className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400 transition-colors cursor-pointer"
+               >
+                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+               </button>
             </div>
           </div>
 

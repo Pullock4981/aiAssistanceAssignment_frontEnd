@@ -50,14 +50,14 @@ const Sidebar = ({ role = "instructor", onClose }: { role?: "instructor" | "stud
       {/* Mobile Close Button */}
       <button 
         onClick={onClose}
-        className="lg:hidden absolute right-4 top-4 p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white transition-colors z-50"
+        className="lg:hidden absolute right-4 top-4 p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white transition-colors z-50 cursor-pointer"
       >
         <X className="h-5 w-5" />
       </button>
 
       {/* Logo Area - Adjusted for mobile overlap */}
       <div className="flex h-16 items-center justify-start px-6 border-b border-white/5">
-        <Link href="/" className="flex items-center gap-3" onClick={onClose}>
+        <Link href="/" className="flex items-center gap-3 cursor-pointer" onClick={onClose}>
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-900/30 border border-purple-500/20 shadow-lg shadow-purple-500/5">
             <GraduationCap className="h-5 w-5 text-purple-400" />
           </div>
@@ -68,7 +68,7 @@ const Sidebar = ({ role = "instructor", onClose }: { role?: "instructor" | "stud
       </div>
 
       {/* Navigation */}
-      <div className="flex-1 overflow-y-auto px-4 py-8">
+      <div className="flex-1 overflow-y-auto px-4 py-8 custom-scrollbar">
         <nav className="space-y-1.5">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -77,7 +77,7 @@ const Sidebar = ({ role = "instructor", onClose }: { role?: "instructor" | "stud
               <Link
                 key={item.name}
                 href={item.href}
-                className="block group"
+                className="block group cursor-pointer"
                 onClick={onClose}
               >
                 <div

@@ -129,8 +129,8 @@ export default function Navbar({ role, onMenuClick }: { role?: string, onMenuCli
 
   return (
     <nav className="flex h-16 w-full items-center justify-between px-4 md:px-8 border-b border-white/5 bg-slate-950/50 backdrop-blur-xl shrink-0 relative z-40">
-      <div className="flex items-center gap-4 md:gap-6 w-full max-w-sm">
-        <button onClick={onMenuClick} className="lg:hidden p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white transition-colors">
+      <div className="flex items-center gap-4 md:gap-6 w-full max-sm">
+        <button onClick={onMenuClick} className="lg:hidden p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white transition-colors cursor-pointer">
           <Menu className="h-5 w-5" />
         </button>
         <div className="hidden sm:block">
@@ -169,7 +169,7 @@ export default function Navbar({ role, onMenuClick }: { role?: string, onMenuCli
                     </button>
                   )}
                 </div>
-                <div className="max-h-80 overflow-y-auto">
+                <div className="max-h-80 overflow-y-auto custom-scrollbar">
                   {loadingNotifs ? (
                     <div className="flex items-center justify-center py-10"><div className="h-6 w-6 animate-spin rounded-full border-2 border-purple-500 border-t-transparent" /></div>
                   ) : notifications.length === 0 ? (

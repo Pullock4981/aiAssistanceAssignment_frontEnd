@@ -206,7 +206,7 @@ export default function StudentAssignmentDetails() {
       <div className="flex items-center gap-4 md:gap-6 px-2 pt-2 shrink-0">
         <button 
           onClick={() => router.back()}
-          className="h-10 w-10 md:h-12 md:w-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors shadow-lg"
+          className="h-10 w-10 md:h-12 md:w-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors shadow-lg cursor-pointer"
         >
           <ArrowLeft className="h-5 w-5 text-slate-400" />
         </button>
@@ -240,7 +240,7 @@ export default function StudentAssignmentDetails() {
                   <button 
                      onClick={getAIHelp}
                      disabled={isExplaining}
-                     className="flex items-center gap-1.5 text-[9px] md:text-[10px] font-black text-purple-400 hover:text-purple-300 uppercase tracking-widest bg-purple-500/10 hover:bg-purple-500/20 px-3 py-2 rounded-xl transition-all active:scale-95"
+                     className="flex items-center gap-1.5 text-[9px] md:text-[10px] font-black text-purple-400 hover:text-purple-300 uppercase tracking-widest bg-purple-500/10 hover:bg-purple-500/20 px-3 py-2 rounded-xl transition-all active:scale-95 cursor-pointer disabled:cursor-not-allowed"
                   >
                      {isExplaining ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />} 
                      AI Assistant Help

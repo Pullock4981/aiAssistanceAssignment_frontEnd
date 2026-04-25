@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { GraduationCap, ArrowLeft, Mail, Lock, User, Sparkles, Loader2, UserCircle2, Briefcase } from "lucide-react";
+import { GraduationCap, ArrowLeft, Mail, Lock, User, Sparkles, Loader2, UserCircle2, Briefcase, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import axios from "axios";
@@ -13,6 +13,7 @@ import { toast, Toaster } from "sonner";
 export default function RegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -45,10 +46,20 @@ export default function RegisterPage() {
       const response = await axios.post(`${apiUrl}/auth/register`, payload);
       
       if (response.data.success) {
-        toast.success("Account created successfully!");
-        // Save token if needed, or redirect to login
+        toast.success("Account created successfully! Redirecting...");
+        
+        // Auto-login: Save token and user data
+        const { token, user } = response.data.data;
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+
+        // Redirect based on role
         setTimeout(() => {
-          router.push("/login");
+          if (user.role === 'instructor') {
+            router.push("/instructor");
+          } else {
+            router.push("/student");
+          }
         }, 1500);
       }
     } catch (error: any) {
@@ -166,15 +177,22 @@ export default function RegisterPage() {
                <Input 
                  required
                  name="password"
-                 type="password" 
+                 type={showPassword ? "text" : "password"} 
                  value={formData.password}
                  onChange={handleChange}
                  placeholder="••••••••" 
-                 className="bg-black/20 border-white/5 h-12 pl-12 rounded-xl focus-visible:ring-purple-500/50 transition-all focus:bg-black/40 text-white"
+                 className="bg-black/20 border-white/5 h-12 pl-12 pr-12 rounded-xl focus-visible:ring-purple-500/50 transition-all focus:bg-black/40 text-white"
                />
+               <button
+                 type="button"
+                 onClick={() => setShowPassword(!showPassword)}
+                 className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400 transition-colors cursor-pointer"
+               >
+                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+               </button>
             </div>
             <p className="text-[9px] text-slate-500 ml-1 leading-relaxed">
-               Min. 8 chars, incl. uppercase, lowercase, number & special char (@$!%*?&).
+               Min. 8 chars, incl. uppercase, lowercase, number & special char (@$!%*?&#).
             </p>
           </div>
 
